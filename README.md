@@ -7,15 +7,15 @@ The platform supports both buyers and sellers with real-world e-commerce functio
 
 ---
 
-## 🎯 Project Objective
+## Project Objective
 
 To design and implement a scalable e-commerce platform using enterprise-level layered architecture, normalized relational database design, and modular Spring Boot development.
 
 ---
 
-## 🚀 Features
+## Features
 
-### 👤 Buyer Features
+### Buyer Features
 - User registration & authentication
 - Browse and search products
 - Sorting by price, brand, discount
@@ -25,7 +25,7 @@ To design and implement a scalable e-commerce platform using enterprise-level la
 - Wishlist management
 - Profile management
 
-### 🏪 Seller Features
+### Seller Features
 - Product CRUD operations
 - Inventory management
 - Order tracking
@@ -34,7 +34,7 @@ To design and implement a scalable e-commerce platform using enterprise-level la
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Backend
 - Java 17
@@ -57,7 +57,7 @@ To design and implement a scalable e-commerce platform using enterprise-level la
 
 ---
 
-## 🗄 Database Design
+## Database Design
 
 The system uses a fully normalized relational schema consisting of:
 
@@ -79,13 +79,13 @@ Designed using enterprise layered architecture and Oracle relational modeling.
 
 ---
 
-## 📊 ER Diagram
+## ER Diagram
 
 ![ER Diagram](docs/RevShop_ER_Diagram.png)
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 The application follows a layered architecture pattern:
 
@@ -95,11 +95,11 @@ This ensures separation of concerns, scalability, and maintainability.
 
 ---
 
-## 📌 Project Status
+##  Project Status
 
-✅ Database design completed  
-✅ ER diagram completed  
-🚧 Backend development in progress  
+ Database design completed  
+ ER diagram completed  
+ Backend development in progress  
 
 ---
 
