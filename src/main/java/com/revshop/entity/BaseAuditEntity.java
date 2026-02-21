@@ -5,11 +5,14 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @MappedSuperclass
+
 public abstract class BaseAuditEntity {
 
     @Column(name = "created_at", nullable = false, updatable = false)
