@@ -1,20 +1,24 @@
 package com.revshop.service.impl;
 
 import com.revshop.dao.UserDAO;
+import com.revshop.dto.LoginRequestDTO;
+import com.revshop.dto.LoginResponseDTO;
 import com.revshop.entity.*;
 import com.revshop.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.revshop.security.jwt.JwtService;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserDAO userDAO;
-
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
     // ==============================
     // REGISTER BUYER
     // ==============================
@@ -87,6 +91,35 @@ public class UserServiceImpl implements UserService {
         return userDAO.save(user);
     }
 
+    // ==============================
+    // LOGIN
+    // ==============================
+    @Override
+    @Transactional(readOnly = true)
+    public LoginResponseDTO login(LoginRequestDTO request) {
+
+        User user = userDAO.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        if (!user.getActive()) {
+            throw new RuntimeException("User is disabled");
+        }
+
+        // ✅ GENERATE JWT
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                user.getRole().name()
+        );
+
+        return LoginResponseDTO.builder()
+                .token(token)
+                .role(user.getRole().name())
+                .build();
+    }
     // ==============================
     // FIND USER BY EMAIL
     // ==============================
