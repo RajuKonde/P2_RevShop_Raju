@@ -2,7 +2,10 @@ package com.revshop.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -42,7 +45,8 @@ public class Product extends BaseAuditEntity {
     private Integer stock;
 
     @Column(nullable = false)
-    private Boolean inStock;
+    @Builder.Default
+    private Boolean inStock = true;
 
     // ===============================
     // PRODUCT STATUS
@@ -52,21 +56,47 @@ public class Product extends BaseAuditEntity {
     private ProductStatus status;
 
     @Column(nullable = false)
-    private Boolean active;
+    @Builder.Default
+    private Boolean active = true;
 
     // ===============================
-    // CATEGORY (Many Products → One Category)
+    // SOFT DELETE (ENTERPRISE)
+    // ===============================
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    // ===============================
+    // CATEGORY
     // ===============================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     // ===============================
-    // SELLER (Marketplace Model)
+    // SELLER
     // ===============================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
+
+    // ===============================
+    // IMAGES
+    // ===============================
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<ProductImage> images;
+    @Builder.Default
+    private List<ProductImage> images = new ArrayList<>();
+
+    // ===============================
+    // HELPER METHODS (BEST PRACTICE)
+    // ===============================
+    public void addImage(ProductImage image) {
+        images.add(image);
+        image.setProduct(this);
+    }
+
+    public void removeImage(ProductImage image) {
+        images.remove(image);
+        image.setProduct(null);
+    }
 }
