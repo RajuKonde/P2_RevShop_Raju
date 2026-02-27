@@ -1,8 +1,11 @@
 package com.revshop.service;
 
 import com.revshop.dto.product.ProductCreateRequest;
+import com.revshop.dto.product.ProductImageResponse;
 import com.revshop.dto.product.ProductResponse;
 import com.revshop.dto.product.ProductUpdateRequest;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 public interface ProductService {
@@ -22,4 +25,10 @@ public interface ProductService {
     List<ProductResponse> getProductsByCategory(Long categoryId);
 
     List<ProductResponse> searchProducts(String keyword);
+
+    List<ProductImageResponse> uploadProductImages(Long productId, String sellerEmail, List<MultipartFile> files);
+
+    List<ProductImageResponse> getProductImages(Long productId);
+
+    void deleteProductImage(Long productId, Long imageId, String sellerEmail);
 }
