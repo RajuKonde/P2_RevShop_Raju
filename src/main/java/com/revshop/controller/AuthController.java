@@ -1,12 +1,18 @@
 package com.revshop.controller;
 
-import com.revshop.dto.*;
-import com.revshop.entity.User;
+import com.revshop.dto.LoginRequestDTO;
+import com.revshop.dto.LoginResponseDTO;
+import com.revshop.dto.RegisterBuyerRequest;
+import com.revshop.dto.RegisterSellerRequest;
+import com.revshop.dto.UserResponse;
 import com.revshop.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,55 +21,21 @@ public class AuthController {
 
     private final UserService userService;
 
-    // REGISTER BUYER
     @PostMapping("/register/buyer")
     public ResponseEntity<UserResponse> registerBuyer(
             @Valid @RequestBody RegisterBuyerRequest request) {
-
-        User user = userService.registerBuyer(
-                request.getEmail(),
-                request.getPassword(),
-                request.getFirstName(),
-                request.getLastName(),
-                request.getPhone(),
-                request.getAddress()
-        );
-
-        return ResponseEntity.ok(mapToResponse(user));
+        return ResponseEntity.ok(userService.registerBuyer(request));
     }
 
-    // REGISTER SELLER
     @PostMapping("/register/seller")
     public ResponseEntity<UserResponse> registerSeller(
             @Valid @RequestBody RegisterSellerRequest request) {
-
-        User user = userService.registerSeller(
-                request.getEmail(),
-                request.getPassword(),
-                request.getBusinessName(),
-                request.getGstNumber(),
-                request.getPhone(),
-                request.getBusinessAddress()
-        );
-
-        return ResponseEntity.ok(mapToResponse(user));
+        return ResponseEntity.ok(userService.registerSeller(request));
     }
 
-    // ✅ LOGIN ENDPOINT (FIX)
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(
-            @RequestBody LoginRequestDTO request) {
-
+            @Valid @RequestBody LoginRequestDTO request) {
         return ResponseEntity.ok(userService.login(request));
-    }
-
-    // MAPPER
-    private UserResponse mapToResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .active(user.getActive())
-                .build();
     }
 }
