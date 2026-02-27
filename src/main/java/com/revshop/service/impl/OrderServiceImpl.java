@@ -29,9 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -254,19 +255,31 @@ public class OrderServiceImpl implements OrderService {
                 order.getId()
         );
 
-        Set<Long> notifiedSellerIds = new HashSet<>();
+        Map<Long, BigDecimal> sellerAmounts = new HashMap<>();
+        Map<Long, Integer> sellerItemCounts = new HashMap<>();
+
         for (OrderItem orderItem : orderItems) {
             Long sellerId = orderItem.getSeller().getId();
-            if (notifiedSellerIds.add(sellerId)) {
-                notificationService.createNotification(
-                        sellerId,
-                        NotificationType.ORDER_RECEIVED,
-                        "New order received",
-                        "You received a new order " + order.getOrderNumber() + " from " + order.getBuyer().getEmail() + ".",
-                        "ORDER",
-                        order.getId()
-                );
-            }
+            sellerAmounts.merge(sellerId, orderItem.getLineTotal(), BigDecimal::add);
+            sellerItemCounts.merge(sellerId, orderItem.getQuantity(), Integer::sum);
+        }
+
+        for (Map.Entry<Long, BigDecimal> entry : sellerAmounts.entrySet()) {
+            Long sellerId = entry.getKey();
+            BigDecimal sellerAmount = entry.getValue().setScale(2, RoundingMode.HALF_UP);
+            Integer itemCount = sellerItemCounts.getOrDefault(sellerId, 0);
+
+            notificationService.createNotification(
+                    sellerId,
+                    NotificationType.ORDER_RECEIVED,
+                    "New order received",
+                    "Order " + order.getOrderNumber()
+                            + " from " + order.getBuyer().getEmail()
+                            + " | Items: " + itemCount
+                            + " | Amount: INR " + sellerAmount.toPlainString(),
+                    "ORDER",
+                    order.getId()
+            );
         }
     }
 

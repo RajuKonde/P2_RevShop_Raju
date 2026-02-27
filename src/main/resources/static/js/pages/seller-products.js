@@ -297,10 +297,8 @@ document.addEventListener("DOMContentLoaded", () => {
             await updateThreshold(Number(thresholdBtn.dataset.id));
         }
         if (deleteBtn) {
-            const shouldDelete = confirm("Delete this product?");
-            if (shouldDelete) {
-                await deleteProduct(Number(deleteBtn.dataset.id));
-            }
+            deleteBtn.disabled = true;
+            await deleteProduct(Number(deleteBtn.dataset.id));
         }
     });
 

@@ -151,14 +151,17 @@ window.RevShopApp = (() => {
                 { key: "cart", label: "Cart", href: "/buyer/cart" },
                 { key: "orders", label: "Orders", href: "/buyer/orders" },
                 { key: "wishlist", label: "Wishlist", href: "/buyer/wishlist" },
-                { key: "notifications", label: "Notifications", href: "/buyer/notifications" }
+                { key: "notifications", label: "Notifications", href: "/buyer/notifications" },
+                { key: "buyer-profile", label: "Profile", href: "/buyer/profile" }
             ];
         }
         if (role === "SELLER") {
             return [
                 { key: "seller-dashboard", label: "Seller Dashboard", href: "/seller/dashboard" },
                 { key: "products", label: "Products", href: "/seller/products" },
-                { key: "categories", label: "Categories", href: "/seller/categories" }
+                { key: "categories", label: "Categories", href: "/seller/categories" },
+                { key: "seller-notifications", label: "Notifications", href: "/seller/notifications" },
+                { key: "seller-profile", label: "Profile", href: "/seller/profile" }
             ];
         }
         return [];

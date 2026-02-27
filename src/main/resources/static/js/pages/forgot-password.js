@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const emailInput = document.getElementById("emailInput");
     const tokenBox = document.getElementById("tokenBox");
     const tokenValue = document.getElementById("tokenValue");
+    const copyTokenBtn = document.getElementById("copyTokenBtn");
+    const goToResetLink = document.getElementById("goToResetLink");
+
+    let latestToken = null;
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -23,11 +27,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: { email }
             });
 
+            latestToken = data.resetToken;
             tokenValue.textContent = data.resetToken;
+            goToResetLink.href = `/reset-password?token=${encodeURIComponent(data.resetToken)}`;
             tokenBox.classList.remove("d-none");
             app.showToast("Reset token generated", "success");
         } catch (error) {
             app.showToast(error.message || "Failed to generate token", "error");
+        }
+    });
+
+    copyTokenBtn.addEventListener("click", async () => {
+        if (!latestToken) {
+            app.showToast("Generate token first", "error");
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(latestToken);
+            app.showToast("Token copied", "success");
+        } catch (error) {
+            app.showToast("Copy failed. Please copy manually.", "error");
         }
     });
 });

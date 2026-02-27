@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     app.mountShell({
         active: "home",
         title: "Discover. Compare. Buy.",
-        subtitle: "Flipkart-style speed with enterprise backend reliability."
+        subtitle: "Premium marketplace experience backed by enterprise APIs."
     });
 
     const state = {

@@ -6,7 +6,6 @@ import com.revshop.dto.LoginResponseDTO;
 import com.revshop.dto.RegisterBuyerRequest;
 import com.revshop.dto.RegisterSellerRequest;
 import com.revshop.dto.UserResponse;
-import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.password.ForgotPasswordRequest;
 import com.revshop.dto.password.ForgotPasswordResponse;
 import com.revshop.dto.password.ResetPasswordRequest;

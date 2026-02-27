@@ -56,6 +56,11 @@ public class WebPageController {
         return "buyer/notifications";
     }
 
+    @GetMapping("/buyer/profile")
+    public String buyerProfilePage() {
+        return "buyer/profile";
+    }
+
     @GetMapping("/seller/dashboard")
     public String sellerDashboardPage() {
         return "seller/dashboard";
@@ -69,5 +74,15 @@ public class WebPageController {
     @GetMapping("/seller/categories")
     public String sellerCategoriesPage() {
         return "seller/categories";
+    }
+
+    @GetMapping("/seller/notifications")
+    public String sellerNotificationsPage() {
+        return "seller/notifications";
+    }
+
+    @GetMapping("/seller/profile")
+    public String sellerProfilePage() {
+        return "seller/profile";
     }
 }
