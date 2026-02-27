@@ -7,6 +7,9 @@ import com.revshop.dto.RegisterBuyerRequest;
 import com.revshop.dto.RegisterSellerRequest;
 import com.revshop.dto.UserResponse;
 import com.revshop.entity.*;
+import com.revshop.exception.BadRequestException;
+import com.revshop.exception.ConflictException;
+import com.revshop.exception.ResourceNotFoundException;
 import com.revshop.mapper.AuthMapper;
 import com.revshop.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -94,14 +97,14 @@ public class UserServiceImpl implements UserService {
     public LoginResponseDTO login(LoginRequestDTO request) {
 
         User user = userDAO.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new BadRequestException("Invalid email or password");
         }
 
         if (!user.getActive()) {
-            throw new RuntimeException("User is disabled");
+            throw new BadRequestException("User is disabled");
         }
 
         // ✅ GENERATE JWT
@@ -122,7 +125,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResponse getByEmail(String email) {
         User user = userDAO.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return authMapper.toUserResponse(user);
     }
 
@@ -131,7 +134,7 @@ public class UserServiceImpl implements UserService {
     // ==============================
     private void validateEmailUniqueness(String email) {
         if (userDAO.existsByEmail(email)) {
-            throw new RuntimeException("Email already registered: " + email);
+            throw new ConflictException("Email already registered: " + email);
         }
     }
 }

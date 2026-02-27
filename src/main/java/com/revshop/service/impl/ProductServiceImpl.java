@@ -10,6 +10,8 @@ import com.revshop.entity.Category;
 import com.revshop.entity.Product;
 import com.revshop.entity.Role;
 import com.revshop.entity.User;
+import com.revshop.exception.ForbiddenOperationException;
+import com.revshop.exception.ResourceNotFoundException;
 import com.revshop.mapper.ProductMapper;
 import com.revshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +33,14 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse createProduct(ProductCreateRequest request, String sellerEmail) {
         User seller = userDAO.findByEmail(sellerEmail)
-                .orElseThrow(() -> new RuntimeException("Seller not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
         if (seller.getRole() != Role.SELLER) {
-            throw new RuntimeException("User is not a seller");
+            throw new ForbiddenOperationException("User is not a seller");
         }
 
         Category category = categoryDAO.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         Product product = Product.builder()
                 .name(request.getName())
@@ -99,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         Product product = productDAO.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return productMapper.toResponse(product);
     }
 
@@ -123,10 +125,10 @@ public class ProductServiceImpl implements ProductService {
 
     private Product getOwnedProduct(Long productId, String sellerEmail) {
         Product product = productDAO.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (!product.getSeller().getEmail().equals(sellerEmail)) {
-            throw new RuntimeException("Not owner of this product");
+            throw new ForbiddenOperationException("Not owner of this product");
         }
 
         return product;
