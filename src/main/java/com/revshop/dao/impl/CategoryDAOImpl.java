@@ -80,7 +80,6 @@ public class CategoryDAOImpl implements CategoryDAO {
                 LEFT JOIN FETCH c.parent p
                 WHERE c.active = true
                 AND c.isDeleted = false
-                AND (p IS NULL OR (p.active = true AND p.isDeleted = false))
                 ORDER BY c.name ASC
                 """, Category.class)
                 .getResultList();

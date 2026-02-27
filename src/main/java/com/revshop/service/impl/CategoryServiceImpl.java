@@ -20,9 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +49,13 @@ public class CategoryServiceImpl implements CategoryService {
         Category existing = categoryDAO.findAnyByName(normalizedName).orElse(null);
         if (existing != null) {
             if (Boolean.TRUE.equals(existing.getActive()) && Boolean.FALSE.equals(existing.getIsDeleted())) {
-                throw new ConflictException("Category name already exists");
+                if (parent != null && parent.getId().equals(existing.getId())) {
+                    throw new BadRequestException("Category cannot be its own parent");
+                }
+                // Idempotent create: update same-name category instead of failing with conflict.
+                existing.setDescription(request.getDescription());
+                existing.setParent(parent);
+                return mapToResponse(categoryDAO.save(existing));
             }
             if (parent != null && parent.getId().equals(existing.getId())) {
                 throw new BadRequestException("Category cannot be its own parent");
@@ -147,10 +155,20 @@ public class CategoryServiceImpl implements CategoryService {
 
         Map<Long, List<Category>> childrenByParentId = new HashMap<>();
         List<Category> roots = new ArrayList<>();
+        Set<Long> activeIds = new HashSet<>();
+
+        for (Category category : categories) {
+            activeIds.add(category.getId());
+        }
 
         for (Category category : categories) {
             Category parent = category.getParent();
-            if (parent == null) {
+            boolean parentVisible = parent != null
+                    && activeIds.contains(parent.getId())
+                    && Boolean.TRUE.equals(parent.getActive())
+                    && Boolean.FALSE.equals(parent.getIsDeleted());
+
+            if (!parentVisible) {
                 roots.add(category);
             } else {
                 childrenByParentId
@@ -181,12 +199,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     private CategoryResponse mapToResponse(Category category) {
         Category parent = category.getParent();
+        boolean parentVisible = parent != null
+                && Boolean.TRUE.equals(parent.getActive())
+                && Boolean.FALSE.equals(parent.getIsDeleted());
         return CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .description(category.getDescription())
-                .parentId(parent == null ? null : parent.getId())
-                .parentName(parent == null ? null : parent.getName())
+                .parentId(parentVisible ? parent.getId() : null)
+                .parentName(parentVisible ? parent.getName() : null)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();
@@ -217,6 +238,10 @@ public class CategoryServiceImpl implements CategoryService {
         if (name == null) {
             throw new BadRequestException("Category name is required");
         }
-        return name.trim().replaceAll("\\s+", " ");
+        String normalized = name.trim().replaceAll("\\s+", " ");
+        if (normalized.isBlank()) {
+            throw new BadRequestException("Category name is required");
+        }
+        return normalized;
     }
 }
