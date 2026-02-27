@@ -1,10 +1,8 @@
 package com.revshop.entity;
 
 public enum ProductStatus {
-
-    DRAFT,      // seller saved but not published
-    ACTIVE,     // visible to buyers
+    DRAFT,
+    ACTIVE,
     OUT_OF_STOCK,
-    DISCONTINUED,
-    BLOCKED     // admin disabled
+    DISABLED
 }

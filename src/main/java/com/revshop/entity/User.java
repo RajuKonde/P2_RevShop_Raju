@@ -28,6 +28,7 @@ public class User extends BaseAuditEntity {
     private Role role;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     // Buyer profile mapping

@@ -2,174 +2,133 @@ package com.revshop.service.impl;
 
 import com.revshop.dao.CategoryDAO;
 import com.revshop.dao.ProductDAO;
-import com.revshop.dao.ProductImageDAO;
 import com.revshop.dao.UserDAO;
-import com.revshop.entity.*;
+import com.revshop.dto.product.ProductCreateRequest;
+import com.revshop.dto.product.ProductResponse;
+import com.revshop.dto.product.ProductUpdateRequest;
+import com.revshop.entity.Category;
+import com.revshop.entity.Product;
+import com.revshop.entity.Role;
+import com.revshop.entity.User;
+import com.revshop.mapper.ProductMapper;
 import com.revshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDAO productDAO;
     private final CategoryDAO categoryDAO;
-    private final ProductImageDAO productImageDAO;
     private final UserDAO userDAO;
+    private final ProductMapper productMapper;
 
-    // ===============================
-    // CREATE PRODUCT (Seller Only)
-    // ===============================
     @Override
     @Transactional
-    public Product createProduct(
-            Long sellerId,
-            Long categoryId,
-            String name,
-            String description,
-            BigDecimal price,
-            Integer stock,
-            List<String> imageUrls
-    ) {
+    public ProductResponse createProduct(ProductCreateRequest request, String sellerEmail) {
+        User seller = userDAO.findByEmail(sellerEmail)
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
 
-        User seller = validateSeller(sellerId);
-        Category category = validateCategory(categoryId);
+        if (seller.getRole() != Role.SELLER) {
+            throw new RuntimeException("User is not a seller");
+        }
+
+        Category category = categoryDAO.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Product product = Product.builder()
-                .name(name)
-                .description(description)
-                .price(price)
-                .stock(stock)
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .stock(request.getStock())
+                .inStock(request.getStock() > 0)
                 .active(true)
-                .deleted(false)
                 .seller(seller)
                 .category(category)
                 .build();
 
-        product = productDAO.save(product);
-
-        saveProductImages(product, imageUrls);
-
-        return product;
+        return productMapper.toResponse(productDAO.save(product));
     }
 
-    // ===============================
-    // UPDATE PRODUCT
-    // ===============================
     @Override
     @Transactional
-    public Product updateProduct(
-            Long productId,
-            Long sellerId,
-            String name,
-            String description,
-            BigDecimal price,
-            Integer stock
-    ) {
-        Product product = getOwnedProduct(productId, sellerId);
+    public ProductResponse updateProduct(Long productId, String sellerEmail, ProductUpdateRequest request) {
+        Product product = getOwnedProduct(productId, sellerEmail);
 
-        product.setName(name);
-        product.setDescription(description);
-        product.setPrice(price);
-        product.setStock(stock);
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setInStock(request.getStock() > 0);
 
-        return productDAO.save(product);
+        return productMapper.toResponse(productDAO.save(product));
     }
 
-    // ===============================
-    // DELETE PRODUCT (SOFT)
-    // ===============================
     @Override
     @Transactional
-    public void deleteProduct(Long productId, Long sellerId) {
-        Product product = getOwnedProduct(productId, sellerId);
-        product.setDeleted(true);
+    public void deleteProduct(Long productId, String sellerEmail) {
+        Product product = getOwnedProduct(productId, sellerEmail);
+        product.setActive(false);
+        product.setIsDeleted(true);
         productDAO.save(product);
     }
 
-    // ===============================
-    // GET PRODUCT BY ID
-    // ===============================
     @Override
     @Transactional(readOnly = true)
-    public Product getProduct(Long id) {
-        return productDAO.findById(id)
+    public List<ProductResponse> getSellerProducts(String sellerEmail) {
+        return productDAO.findBySellerEmail(sellerEmail)
+                .stream()
+                .map(productMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getAllActiveProducts() {
+        return productDAO.findActiveProducts()
+                .stream()
+                .map(productMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponse getProductById(Long id) {
+        Product product = productDAO.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+        return productMapper.toResponse(product);
     }
 
-    // ===============================
-    // SELLER PRODUCTS
-    // ===============================
     @Override
     @Transactional(readOnly = true)
-    public List<Product> getSellerProducts(Long sellerId) {
-        return productDAO.findBySellerId(sellerId);
+    public List<ProductResponse> getProductsByCategory(Long categoryId) {
+        return productDAO.findByCategory(categoryId)
+                .stream()
+                .map(productMapper::toResponse)
+                .toList();
     }
 
-    // ===============================
-    // CATEGORY PRODUCTS
-    // ===============================
     @Override
     @Transactional(readOnly = true)
-    public List<Product> getProductsByCategory(Long categoryId) {
-        return productDAO.findByCategory(categoryId);
+    public List<ProductResponse> searchProducts(String keyword) {
+        return productDAO.searchByName(keyword)
+                .stream()
+                .map(productMapper::toResponse)
+                .toList();
     }
 
-    // ===============================
-    // PUBLIC PRODUCTS
-    // ===============================
-    @Override
-    @Transactional(readOnly = true)
-    public List<Product> getAllActiveProducts() {
-        return productDAO.findActiveProducts();
-    }
+    private Product getOwnedProduct(Long productId, String sellerEmail) {
+        Product product = productDAO.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-    // ===============================
-    // PRIVATE HELPERS
-    // ===============================
-
-    private User validateSeller(Long sellerId) {
-        User user = userDAO.findById(sellerId)
-                .orElseThrow(() -> new RuntimeException("Seller not found"));
-
-        if (user.getRole() != Role.SELLER) {
-            throw new RuntimeException("User is not a seller");
-        }
-
-        return user;
-    }
-
-    private Category validateCategory(Long categoryId) {
-        return categoryDAO.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-    }
-
-    private Product getOwnedProduct(Long productId, Long sellerId) {
-        Product product = getProduct(productId);
-
-        if (!product.getSeller().getId().equals(sellerId)) {
-            throw new RuntimeException("You are not the owner of this product");
+        if (!product.getSeller().getEmail().equals(sellerEmail)) {
+            throw new RuntimeException("Not owner of this product");
         }
 
         return product;
-    }
-
-    private void saveProductImages(Product product, List<String> imageUrls) {
-        if (imageUrls == null || imageUrls.isEmpty()) return;
-
-        int order = 1;
-        for (String url : imageUrls) {
-            ProductImage image = ProductImage.builder()
-                    .imageUrl(url)
-                    .displayOrder(order++)
-                    .product(product)
-                    .build();
-
-            productImageDAO.save(image);
-        }
     }
 }

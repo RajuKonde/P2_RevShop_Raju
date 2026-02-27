@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
-
 public abstract class BaseAuditEntity {
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -21,13 +20,14 @@ public abstract class BaseAuditEntity {
     @Column(name = "updated_at")
     protected LocalDateTime updatedAt;
 
+    // FIXED NAME
     @Column(name = "is_deleted", nullable = false)
-    protected Boolean deleted = false;
+    protected Boolean isDeleted = false;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.deleted = false;
+        this.isDeleted = false;
     }
 
     @PreUpdate

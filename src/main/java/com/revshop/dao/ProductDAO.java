@@ -11,11 +11,11 @@ public interface ProductDAO {
 
     Optional<Product> findById(Long id);
 
-    List<Product> findBySellerId(Long sellerId);
+    List<Product> findBySellerEmail(String email);
 
     List<Product> findByCategory(Long categoryId);
 
     List<Product> findActiveProducts();
 
-    void softDelete(Long id);
+    List<Product> searchByName(String keyword);
 }

@@ -3,17 +3,17 @@ package com.revshop.dao.impl;
 import com.revshop.dao.ProductDAO;
 import com.revshop.entity.Product;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class ProductDAOImpl implements ProductDAO {
 
-    @PersistenceContext
-    private EntityManager em;
+    private final EntityManager em;
 
     @Override
     public Product save(Product product) {
@@ -26,19 +26,17 @@ public class ProductDAOImpl implements ProductDAO {
 
     @Override
     public Optional<Product> findById(Long id) {
-        Product product = em.find(Product.class, id);
-        return Optional.ofNullable(product);
+        return Optional.ofNullable(em.find(Product.class, id));
     }
 
     @Override
-    public List<Product> findBySellerId(Long sellerId) {
+    public List<Product> findBySellerEmail(String email) {
         return em.createQuery("""
                 SELECT p FROM Product p
-                WHERE p.seller.id = :sellerId
-                AND p.deleted = false
-                ORDER BY p.createdAt DESC
+                WHERE p.seller.email = :email
+                AND p.active = true
                 """, Product.class)
-                .setParameter("sellerId", sellerId)
+                .setParameter("email", email)
                 .getResultList();
     }
 
@@ -46,11 +44,10 @@ public class ProductDAOImpl implements ProductDAO {
     public List<Product> findByCategory(Long categoryId) {
         return em.createQuery("""
                 SELECT p FROM Product p
-                WHERE p.category.id = :categoryId
-                AND p.deleted = false
+                WHERE p.category.id = :id
                 AND p.active = true
                 """, Product.class)
-                .setParameter("categoryId", categoryId)
+                .setParameter("id", categoryId)
                 .getResultList();
     }
 
@@ -58,18 +55,18 @@ public class ProductDAOImpl implements ProductDAO {
     public List<Product> findActiveProducts() {
         return em.createQuery("""
                 SELECT p FROM Product p
-                WHERE p.deleted = false AND p.active = true
-                ORDER BY p.createdAt DESC
-                """, Product.class)
-                .getResultList();
+                WHERE p.active = true
+                """, Product.class).getResultList();
     }
 
     @Override
-    public void softDelete(Long id) {
-        Product product = em.find(Product.class, id);
-        if (product != null) {
-            product.setDeleted(true);
-            em.merge(product);
-        }
+    public List<Product> searchByName(String keyword) {
+        return em.createQuery("""
+                SELECT p FROM Product p
+                WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :k, '%'))
+                AND p.active = true
+                """, Product.class)
+                .setParameter("k", keyword)
+                .getResultList();
     }
 }

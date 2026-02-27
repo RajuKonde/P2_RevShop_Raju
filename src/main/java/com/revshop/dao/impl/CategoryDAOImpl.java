@@ -34,7 +34,9 @@ public class CategoryDAOImpl implements CategoryDAO {
     public Optional<Category> findBySlug(String slug) {
         return em.createQuery("""
                 SELECT c FROM Category c
-                WHERE c.slug = :slug AND c.deleted = false
+                WHERE LOWER(c.name) = LOWER(:slug)
+                AND c.active = true
+                AND c.isDeleted = false
                 """, Category.class)
                 .setParameter("slug", slug)
                 .getResultStream()
@@ -45,8 +47,9 @@ public class CategoryDAOImpl implements CategoryDAO {
     public List<Category> findAllActive() {
         return em.createQuery("""
                 SELECT c FROM Category c
-                WHERE c.deleted = false
-                ORDER BY c.displayOrder ASC
+                WHERE c.active = true
+                AND c.isDeleted = false
+                ORDER BY c.name ASC
                 """, Category.class)
                 .getResultList();
     }
@@ -56,6 +59,7 @@ public class CategoryDAOImpl implements CategoryDAO {
         Long count = em.createQuery("""
                 SELECT COUNT(c) FROM Category c
                 WHERE LOWER(c.name) = LOWER(:name)
+                AND c.isDeleted = false
                 """, Long.class)
                 .setParameter("name", name)
                 .getSingleResult();

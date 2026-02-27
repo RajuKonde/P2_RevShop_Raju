@@ -1,37 +1,25 @@
 package com.revshop.service;
 
-import com.revshop.entity.Product;
-
+import com.revshop.dto.product.ProductCreateRequest;
+import com.revshop.dto.product.ProductResponse;
+import com.revshop.dto.product.ProductUpdateRequest;
 import java.util.List;
-import java.math.BigDecimal;
+
 public interface ProductService {
 
-    Product createProduct(
-            Long sellerId,
-            Long categoryId,
-            String name,
-            String description,
-            BigDecimal price,
-            Integer stock,
-            List<String> imageUrls
-    );
+    ProductResponse createProduct(ProductCreateRequest request, String sellerEmail);
 
-    Product updateProduct(
-            Long productId,
-            Long sellerId,
-            String name,
-            String description,
-            BigDecimal price,
-            Integer stock
-    );
+    ProductResponse updateProduct(Long productId, String sellerEmail, ProductUpdateRequest request);
 
-    void deleteProduct(Long productId, Long sellerId);
+    void deleteProduct(Long productId, String sellerEmail);
 
-    Product getProduct(Long id);
+    List<ProductResponse> getSellerProducts(String sellerEmail);
 
-    List<Product> getSellerProducts(Long sellerId);
+    List<ProductResponse> getAllActiveProducts();
 
-    List<Product> getProductsByCategory(Long categoryId);
+    ProductResponse getProductById(Long id);
 
-    List<Product> getAllActiveProducts();
+    List<ProductResponse> getProductsByCategory(Long categoryId);
+
+    List<ProductResponse> searchProducts(String keyword);
 }

@@ -1,7 +1,7 @@
 package com.revshop.security.config;
 
 import com.revshop.dao.UserDAO;
-import com.revshop.entity.User; // YOUR ENTITY USER
+import com.revshop.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class ApplicationSecurityBeans {
 
     private final UserDAO userDAO;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder; // injected from PasswordConfig
 
     // ===============================
     // USER DETAILS SERVICE
@@ -26,7 +26,6 @@ public class ApplicationSecurityBeans {
             User user = userDAO.findByEmail(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            // IMPORTANT: Use SPRING USER here
             return org.springframework.security.core.userdetails.User
                     .builder()
                     .username(user.getEmail())
@@ -37,7 +36,7 @@ public class ApplicationSecurityBeans {
     }
 
     // ===============================
-    // AUTH PROVIDER (Spring Security 7)
+    // AUTH PROVIDER
     // ===============================
     @Bean
     public AuthenticationProvider authenticationProvider() {
