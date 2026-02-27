@@ -1,22 +1,23 @@
 package com.revshop.exception;
 
+import com.revshop.dto.common.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleNotFound(
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(
             ResourceNotFoundException ex,
             HttpServletRequest request
     ) {
@@ -24,7 +25,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConflictException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleConflict(
+    public ResponseEntity<ApiResponse<Void>> handleConflict(
             ConflictException ex,
             HttpServletRequest request
     ) {
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ForbiddenOperationException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleForbidden(
+    public ResponseEntity<ApiResponse<Void>> handleForbidden(
             ForbiddenOperationException ex,
             HttpServletRequest request
     ) {
@@ -40,7 +41,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleBadRequest(
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(
             BadRequestException ex,
             HttpServletRequest request
     ) {
@@ -48,7 +49,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleValidation(
+    public ResponseEntity<ApiResponse<Void>> handleValidation(
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
@@ -72,7 +73,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolation(
             ConstraintViolationException ex,
             HttpServletRequest request
     ) {
@@ -90,7 +91,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleUnreadableBody(
+    public ResponseEntity<ApiResponse<Void>> handleUnreadableBody(
             HttpMessageNotReadableException ex,
             HttpServletRequest request
     ) {
@@ -98,28 +99,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public org.springframework.http.ResponseEntity<ApiErrorResponse> handleGeneric(
+    public ResponseEntity<ApiResponse<Void>> handleGeneric(
             Exception ex,
             HttpServletRequest request
     ) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error", request.getRequestURI(), null);
     }
 
-    private org.springframework.http.ResponseEntity<ApiErrorResponse> buildError(
+    private ResponseEntity<ApiResponse<Void>> buildError(
             HttpStatus status,
             String message,
             String path,
             List<String> validationErrors
     ) {
-        ApiErrorResponse response = ApiErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(status.value())
-                .error(status.getReasonPhrase())
-                .message(message)
-                .path(path)
-                .validationErrors(validationErrors)
-                .build();
+        ApiResponse<Void> response = ApiResponse.<Void>error(
+                message,
+                status.value(),
+                path,
+                validationErrors
+        );
 
-        return org.springframework.http.ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(status).body(response);
     }
 }
