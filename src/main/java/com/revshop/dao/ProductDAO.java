@@ -47,4 +47,6 @@ public interface ProductDAO {
     long countLowStockBySellerEmail(String sellerEmail, int threshold);
 
     List<Product> findLowStockBySellerEmail(String sellerEmail);
+
+    long countActiveByCategoryId(Long categoryId);
 }
