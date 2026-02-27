@@ -2,6 +2,7 @@ package com.revshop.dao;
 
 import com.revshop.entity.Product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,26 @@ public interface ProductDAO {
     List<Product> findActiveProducts();
 
     List<Product> searchByName(String keyword);
+
+    List<Product> searchPublicProducts(
+            String keyword,
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Boolean inStock,
+            String sortBy,
+            String sortDir,
+            int offset,
+            int limit
+    );
+
+    long countPublicProducts(
+            String keyword,
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Boolean inStock
+    );
 
     long countBySellerEmail(String sellerEmail);
 

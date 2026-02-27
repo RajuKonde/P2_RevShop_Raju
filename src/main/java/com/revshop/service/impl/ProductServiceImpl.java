@@ -4,6 +4,7 @@ import com.revshop.dao.CategoryDAO;
 import com.revshop.dao.ProductDAO;
 import com.revshop.dao.ProductImageDAO;
 import com.revshop.dao.UserDAO;
+import com.revshop.dto.common.PagedResponse;
 import com.revshop.dto.product.ProductCreateRequest;
 import com.revshop.dto.product.ProductImageResponse;
 import com.revshop.dto.product.ProductResponse;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -140,6 +142,69 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(productMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<ProductResponse> searchProducts(
+            String keyword,
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Boolean inStock,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        if (page < 0) {
+            throw new BadRequestException("Page must be >= 0");
+        }
+        if (size <= 0 || size > 100) {
+            throw new BadRequestException("Size must be between 1 and 100");
+        }
+        if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("minPrice must be >= 0");
+        }
+        if (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("maxPrice must be >= 0");
+        }
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+            throw new BadRequestException("minPrice cannot be greater than maxPrice");
+        }
+
+        String resolvedSortBy = resolveSortBy(sortBy);
+        String resolvedSortDir = resolveSortDir(sortDir);
+        int offset = page * size;
+
+        List<ProductResponse> content = productDAO.searchPublicProducts(
+                        keyword,
+                        categoryId,
+                        minPrice,
+                        maxPrice,
+                        inStock,
+                        resolvedSortBy,
+                        resolvedSortDir,
+                        offset,
+                        size
+                ).stream()
+                .map(productMapper::toResponse)
+                .toList();
+
+        long totalElements = productDAO.countPublicProducts(keyword, categoryId, minPrice, maxPrice, inStock);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return PagedResponse.<ProductResponse>builder()
+                .content(content)
+                .page(page)
+                .size(size)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
+                .hasNext(page + 1 < totalPages)
+                .hasPrevious(page > 0)
+                .sortBy(resolvedSortBy)
+                .sortDir(resolvedSortDir)
+                .build();
     }
 
     @Override
@@ -264,5 +329,25 @@ public class ProductServiceImpl implements ProductService {
         } catch (IOException ignored) {
             // Keep DB consistency even if file deletion is best-effort.
         }
+    }
+
+    private String resolveSortBy(String sortBy) {
+        if (sortBy == null || sortBy.isBlank()) {
+            return "createdAt";
+        }
+        return switch (sortBy) {
+            case "name", "price", "createdAt" -> sortBy;
+            default -> throw new BadRequestException("Invalid sortBy. Allowed: name, price, createdAt");
+        };
+    }
+
+    private String resolveSortDir(String sortDir) {
+        if (sortDir == null || sortDir.isBlank()) {
+            return "desc";
+        }
+        if (!sortDir.equalsIgnoreCase("asc") && !sortDir.equalsIgnoreCase("desc")) {
+            throw new BadRequestException("Invalid sortDir. Allowed: asc, desc");
+        }
+        return sortDir.toLowerCase();
     }
 }
