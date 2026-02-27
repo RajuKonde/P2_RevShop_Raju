@@ -25,7 +25,15 @@ public class CartDAOImpl implements CartDAO {
 
     @Override
     public Optional<Cart> findById(Long cartId) {
-        return Optional.ofNullable(em.find(Cart.class, cartId));
+        return em.createQuery("""
+                SELECT c FROM Cart c
+                WHERE c.id = :cartId
+                AND c.active = true
+                AND c.isDeleted = false
+                """, Cart.class)
+                .setParameter("cartId", cartId)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override

@@ -26,8 +26,15 @@ public class CategoryDAOImpl implements CategoryDAO {
 
     @Override
     public Optional<Category> findById(Long id) {
-        Category category = em.find(Category.class, id);
-        return Optional.ofNullable(category);
+        return em.createQuery("""
+                SELECT c FROM Category c
+                WHERE c.id = :id
+                AND c.active = true
+                AND c.isDeleted = false
+                """, Category.class)
+                .setParameter("id", id)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override
