@@ -26,7 +26,15 @@ public class PaymentDAOImpl implements PaymentDAO {
 
     @Override
     public Optional<Payment> findById(Long paymentId) {
-        return Optional.ofNullable(em.find(Payment.class, paymentId));
+        return em.createQuery("""
+                SELECT p FROM Payment p
+                WHERE p.id = :paymentId
+                AND p.active = true
+                AND p.isDeleted = false
+                """, Payment.class)
+                .setParameter("paymentId", paymentId)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override

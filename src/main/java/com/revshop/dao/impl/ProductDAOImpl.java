@@ -29,7 +29,14 @@ public class ProductDAOImpl implements ProductDAO {
 
     @Override
     public Optional<Product> findById(Long id) {
-        return Optional.ofNullable(em.find(Product.class, id));
+        return em.createQuery("""
+                SELECT p FROM Product p
+                WHERE p.id = :id
+                AND p.isDeleted = false
+                """, Product.class)
+                .setParameter("id", id)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override
@@ -38,6 +45,7 @@ public class ProductDAOImpl implements ProductDAO {
                 SELECT p FROM Product p
                 WHERE p.seller.email = :email
                 AND p.active = true
+                AND p.isDeleted = false
                 """, Product.class)
                 .setParameter("email", email)
                 .getResultList();
@@ -49,6 +57,7 @@ public class ProductDAOImpl implements ProductDAO {
                 SELECT p FROM Product p
                 WHERE p.category.id = :id
                 AND p.active = true
+                AND p.isDeleted = false
                 """, Product.class)
                 .setParameter("id", categoryId)
                 .getResultList();
@@ -59,6 +68,7 @@ public class ProductDAOImpl implements ProductDAO {
         return em.createQuery("""
                 SELECT p FROM Product p
                 WHERE p.active = true
+                AND p.isDeleted = false
                 """, Product.class).getResultList();
     }
 
@@ -68,6 +78,7 @@ public class ProductDAOImpl implements ProductDAO {
                 SELECT p FROM Product p
                 WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :k, '%'))
                 AND p.active = true
+                AND p.isDeleted = false
                 """, Product.class)
                 .setParameter("k", keyword)
                 .getResultList();

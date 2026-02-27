@@ -24,8 +24,16 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Optional<User> findById(Long id) {
-        User user = entityManager.find(User.class, id);
-        return Optional.ofNullable(user);
+        TypedQuery<User> query = entityManager.createQuery(
+                "SELECT u FROM User u WHERE u.id = :id AND u.isDeleted = false",
+                User.class
+        );
+        query.setParameter("id", id);
+        try {
+            return Optional.of(query.getSingleResult());
+        } catch (NoResultException ex) {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -61,6 +69,7 @@ public class UserDAOImpl implements UserDAO {
     public void delete(Long id) {
         User user = entityManager.find(User.class, id);
         if (user != null) {
+            user.setActive(false);
             user.setIsDeleted(true); // soft delete
             entityManager.merge(user);
         }

@@ -26,7 +26,15 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public Optional<Order> findById(Long orderId) {
-        return Optional.ofNullable(em.find(Order.class, orderId));
+        return em.createQuery("""
+                SELECT o FROM CustomerOrder o
+                WHERE o.id = :orderId
+                AND o.active = true
+                AND o.isDeleted = false
+                """, Order.class)
+                .setParameter("orderId", orderId)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override
