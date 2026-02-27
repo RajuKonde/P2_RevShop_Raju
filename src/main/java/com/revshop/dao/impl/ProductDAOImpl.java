@@ -69,4 +69,44 @@ public class ProductDAOImpl implements ProductDAO {
                 .setParameter("k", keyword)
                 .getResultList();
     }
+
+    @Override
+    public long countBySellerEmail(String sellerEmail) {
+        Long count = em.createQuery("""
+                SELECT COUNT(p) FROM Product p
+                WHERE p.seller.email = :sellerEmail
+                AND p.isDeleted = false
+                """, Long.class)
+                .setParameter("sellerEmail", sellerEmail)
+                .getSingleResult();
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public long countActiveBySellerEmail(String sellerEmail) {
+        Long count = em.createQuery("""
+                SELECT COUNT(p) FROM Product p
+                WHERE p.seller.email = :sellerEmail
+                AND p.active = true
+                AND p.isDeleted = false
+                """, Long.class)
+                .setParameter("sellerEmail", sellerEmail)
+                .getSingleResult();
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public long countLowStockBySellerEmail(String sellerEmail, int threshold) {
+        Long count = em.createQuery("""
+                SELECT COUNT(p) FROM Product p
+                WHERE p.seller.email = :sellerEmail
+                AND p.active = true
+                AND p.isDeleted = false
+                AND p.stock <= :threshold
+                """, Long.class)
+                .setParameter("sellerEmail", sellerEmail)
+                .setParameter("threshold", threshold)
+                .getSingleResult();
+        return count == null ? 0 : count;
+    }
 }

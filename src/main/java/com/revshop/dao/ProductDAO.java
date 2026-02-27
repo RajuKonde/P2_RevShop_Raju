@@ -18,4 +18,10 @@ public interface ProductDAO {
     List<Product> findActiveProducts();
 
     List<Product> searchByName(String keyword);
+
+    long countBySellerEmail(String sellerEmail);
+
+    long countActiveBySellerEmail(String sellerEmail);
+
+    long countLowStockBySellerEmail(String sellerEmail, int threshold);
 }
