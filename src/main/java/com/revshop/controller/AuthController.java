@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.LoginRequestDTO;
 import com.revshop.dto.LoginResponseDTO;
 import com.revshop.dto.RegisterBuyerRequest;
@@ -22,20 +23,23 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register/buyer")
-    public ResponseEntity<UserResponse> registerBuyer(
+    public ResponseEntity<ApiResponse<UserResponse>> registerBuyer(
             @Valid @RequestBody RegisterBuyerRequest request) {
-        return ResponseEntity.ok(userService.registerBuyer(request));
+        UserResponse userResponse = userService.registerBuyer(request);
+        return ResponseEntity.ok(ApiResponse.success("Buyer registered successfully", userResponse));
     }
 
     @PostMapping("/register/seller")
-    public ResponseEntity<UserResponse> registerSeller(
+    public ResponseEntity<ApiResponse<UserResponse>> registerSeller(
             @Valid @RequestBody RegisterSellerRequest request) {
-        return ResponseEntity.ok(userService.registerSeller(request));
+        UserResponse userResponse = userService.registerSeller(request);
+        return ResponseEntity.ok(ApiResponse.success("Seller registered successfully", userResponse));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(userService.login(request));
+        LoginResponseDTO loginResponse = userService.login(request);
+        return ResponseEntity.ok(ApiResponse.success("Login successful", loginResponse));
     }
 }
