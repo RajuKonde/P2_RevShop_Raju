@@ -32,7 +32,7 @@ public class UserDAOImpl implements UserDAO {
     public Optional<User> findByEmail(String email) {
         try {
             TypedQuery<User> query = entityManager.createQuery(
-                    "SELECT u FROM User u WHERE u.email = :email AND u.deleted = false",
+                    "SELECT u FROM User u WHERE u.email = :email AND u.isDeleted = false",
                     User.class
             );
             query.setParameter("email", email);
@@ -45,7 +45,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public boolean existsByEmail(String email) {
         TypedQuery<Long> query = entityManager.createQuery(
-                "SELECT COUNT(u) FROM User u WHERE u.email = :email AND u.deleted = false",
+                "SELECT COUNT(u) FROM User u WHERE u.email = :email AND u.isDeleted = false",
                 Long.class
         );
         query.setParameter("email", email);
@@ -61,7 +61,7 @@ public class UserDAOImpl implements UserDAO {
     public void delete(Long id) {
         User user = entityManager.find(User.class, id);
         if (user != null) {
-            user.setDeleted(true); // soft delete
+            user.setIsDeleted(true); // soft delete
             entityManager.merge(user);
         }
     }

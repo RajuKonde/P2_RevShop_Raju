@@ -1,6 +1,7 @@
 package com.revshop.security.config;
 
 import com.revshop.security.jwt.JwtAuthFilter;
+import com.revshop.security.jwt.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,35 +14,50 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
-@EnableMethodSecurity
+@EnableMethodSecurity // enables @PreAuthorize
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // Disable CSRF for REST APIs
                 .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(auth -> auth
-                        // ✅ PUBLIC APIs
-                        .requestMatchers(
-                                "/api/auth/**",   // login + register
-                                "/error"
-                        ).permitAll()
-
-                        // 🔐 PROTECTED APIs
-                        .anyRequest().authenticated()
-                )
-
+                // No sessions (JWT only)
                 .sessionManagement(sess ->
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // Unauthorized handler
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                )
+
+                //  API Authorization Rules
+                .authorizeHttpRequests(auth -> auth
+                        //  PUBLIC APIs
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/error",
+
+                                // Swagger (optional)
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        //  EVERYTHING ELSE NEEDS JWT
+                        .anyRequest().authenticated()
+                )
+
+                //  Auth Provider
                 .authenticationProvider(authenticationProvider)
 
+                //  JWT Filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
