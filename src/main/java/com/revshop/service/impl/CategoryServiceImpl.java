@@ -1,0 +1,201 @@
+package com.revshop.service.impl;
+
+import com.revshop.dao.CategoryDAO;
+import com.revshop.dao.ProductDAO;
+import com.revshop.dao.UserDAO;
+import com.revshop.dto.category.CategoryCreateRequest;
+import com.revshop.dto.category.CategoryResponse;
+import com.revshop.dto.category.CategoryTreeResponse;
+import com.revshop.dto.category.CategoryUpdateRequest;
+import com.revshop.entity.Category;
+import com.revshop.entity.Role;
+import com.revshop.entity.User;
+import com.revshop.exception.BadRequestException;
+import com.revshop.exception.ConflictException;
+import com.revshop.exception.ForbiddenOperationException;
+import com.revshop.exception.ResourceNotFoundException;
+import com.revshop.service.CategoryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class CategoryServiceImpl implements CategoryService {
+
+    private final CategoryDAO categoryDAO;
+    private final ProductDAO productDAO;
+    private final UserDAO userDAO;
+
+    @Override
+    @Transactional
+    public CategoryResponse createCategory(String sellerEmail, CategoryCreateRequest request) {
+        validateSeller(sellerEmail);
+
+        if (categoryDAO.existsByName(request.getName())) {
+            throw new ConflictException("Category name already exists");
+        }
+
+        Category parent = null;
+        if (request.getParentId() != null) {
+            parent = categoryDAO.findById(request.getParentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
+        }
+
+        Category category = Category.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .parent(parent)
+                .active(true)
+                .build();
+
+        return mapToResponse(categoryDAO.save(category));
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse updateCategory(Long categoryId, String sellerEmail, CategoryUpdateRequest request) {
+        validateSeller(sellerEmail);
+
+        Category category = categoryDAO.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        Category duplicate = categoryDAO.findBySlug(request.getName()).orElse(null);
+        if (duplicate != null && !duplicate.getId().equals(category.getId())) {
+            throw new ConflictException("Category name already exists");
+        }
+
+        Category parent = null;
+        if (request.getParentId() != null) {
+            if (request.getParentId().equals(categoryId)) {
+                throw new BadRequestException("Category cannot be its own parent");
+            }
+            parent = categoryDAO.findById(request.getParentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
+            validateNoCycle(category, parent);
+        }
+
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+        category.setParent(parent);
+
+        return mapToResponse(categoryDAO.save(category));
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long categoryId, String sellerEmail) {
+        validateSeller(sellerEmail);
+
+        Category category = categoryDAO.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        long activeProductCount = productDAO.countActiveByCategoryId(categoryId);
+        if (activeProductCount > 0) {
+            throw new BadRequestException("Cannot delete category with active products");
+        }
+
+        long activeChildren = categoryDAO.countActiveChildren(categoryId);
+        if (activeChildren > 0) {
+            throw new BadRequestException("Cannot delete category with active child categories");
+        }
+
+        category.setActive(false);
+        category.setIsDeleted(true);
+        categoryDAO.save(category);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryById(Long categoryId) {
+        Category category = categoryDAO.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        return mapToResponse(category);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getAllActiveCategories() {
+        return categoryDAO.findAllActiveWithParent().stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryTreeResponse> getCategoryTree() {
+        List<Category> categories = categoryDAO.findAllActiveWithParent();
+
+        Map<Long, List<Category>> childrenByParentId = new HashMap<>();
+        List<Category> roots = new ArrayList<>();
+
+        for (Category category : categories) {
+            Category parent = category.getParent();
+            if (parent == null) {
+                roots.add(category);
+            } else {
+                childrenByParentId
+                        .computeIfAbsent(parent.getId(), ignored -> new ArrayList<>())
+                        .add(category);
+            }
+        }
+
+        return roots.stream()
+                .map(root -> mapToTree(root, childrenByParentId))
+                .toList();
+    }
+
+    private CategoryTreeResponse mapToTree(Category category, Map<Long, List<Category>> childrenByParentId) {
+        List<CategoryTreeResponse> children = childrenByParentId
+                .getOrDefault(category.getId(), List.of())
+                .stream()
+                .map(child -> mapToTree(child, childrenByParentId))
+                .toList();
+
+        return CategoryTreeResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .children(children)
+                .build();
+    }
+
+    private CategoryResponse mapToResponse(Category category) {
+        Category parent = category.getParent();
+        return CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .parentId(parent == null ? null : parent.getId())
+                .parentName(parent == null ? null : parent.getName())
+                .createdAt(category.getCreatedAt())
+                .updatedAt(category.getUpdatedAt())
+                .build();
+    }
+
+    private void validateNoCycle(Category category, Category newParent) {
+        Category cursor = newParent;
+        while (cursor != null) {
+            if (cursor.getId().equals(category.getId())) {
+                throw new BadRequestException("Category hierarchy cycle is not allowed");
+            }
+            cursor = cursor.getParent();
+        }
+    }
+
+    private void validateSeller(String sellerEmail) {
+        User seller = userDAO.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        if (seller.getRole() != Role.SELLER) {
+            throw new ForbiddenOperationException("Only seller can manage categories");
+        }
+        if (!Boolean.TRUE.equals(seller.getActive()) || Boolean.TRUE.equals(seller.getIsDeleted())) {
+            throw new ForbiddenOperationException("Seller account is inactive");
+        }
+    }
+}

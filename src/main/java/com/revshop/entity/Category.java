@@ -21,6 +21,10 @@ public class Category extends BaseAuditEntity {
 
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean active = true;

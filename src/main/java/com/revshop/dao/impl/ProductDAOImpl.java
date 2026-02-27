@@ -263,4 +263,17 @@ public class ProductDAOImpl implements ProductDAO {
                 .setParameter("sellerEmail", sellerEmail)
                 .getResultList();
     }
+
+    @Override
+    public long countActiveByCategoryId(Long categoryId) {
+        Long count = em.createQuery("""
+                SELECT COUNT(p) FROM Product p
+                WHERE p.category.id = :categoryId
+                AND p.active = true
+                AND p.isDeleted = false
+                """, Long.class)
+                .setParameter("categoryId", categoryId)
+                .getSingleResult();
+        return count == null ? 0 : count;
+    }
 }

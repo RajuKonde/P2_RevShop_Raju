@@ -15,5 +15,9 @@ public interface CategoryDAO {
 
     List<Category> findAllActive();
 
+    List<Category> findAllActiveWithParent();
+
     boolean existsByName(String name);
+
+    long countActiveChildren(Long parentId);
 }

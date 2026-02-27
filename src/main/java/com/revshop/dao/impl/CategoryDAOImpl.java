@@ -62,6 +62,19 @@ public class CategoryDAOImpl implements CategoryDAO {
     }
 
     @Override
+    public List<Category> findAllActiveWithParent() {
+        return em.createQuery("""
+                SELECT c FROM Category c
+                LEFT JOIN FETCH c.parent p
+                WHERE c.active = true
+                AND c.isDeleted = false
+                AND (p IS NULL OR (p.active = true AND p.isDeleted = false))
+                ORDER BY c.name ASC
+                """, Category.class)
+                .getResultList();
+    }
+
+    @Override
     public boolean existsByName(String name) {
         Long count = em.createQuery("""
                 SELECT COUNT(c) FROM Category c
@@ -71,5 +84,18 @@ public class CategoryDAOImpl implements CategoryDAO {
                 .setParameter("name", name)
                 .getSingleResult();
         return count > 0;
+    }
+
+    @Override
+    public long countActiveChildren(Long parentId) {
+        Long count = em.createQuery("""
+                SELECT COUNT(c) FROM Category c
+                WHERE c.parent.id = :parentId
+                AND c.active = true
+                AND c.isDeleted = false
+                """, Long.class)
+                .setParameter("parentId", parentId)
+                .getSingleResult();
+        return count == null ? 0 : count;
     }
 }
