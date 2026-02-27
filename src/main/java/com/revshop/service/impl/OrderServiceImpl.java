@@ -106,6 +106,7 @@ public class OrderServiceImpl implements OrderService {
             OrderItem savedOrderItem = orderItemDAO.save(orderItem);
             createdOrderItems.add(savedOrderItem);
 
+            int previousStock = product.getStock();
             int updatedStock = product.getStock() - cartItem.getQuantity();
             product.setStock(updatedStock);
             product.setInStock(updatedStock > 0);
@@ -113,6 +114,7 @@ public class OrderServiceImpl implements OrderService {
                 product.setStatus(com.revshop.entity.ProductStatus.OUT_OF_STOCK);
             }
             productDAO.save(product);
+            sendLowStockNotificationIfNeeded(product, previousStock, updatedStock);
 
             cartItem.setActive(false);
             cartItem.setIsDeleted(true);
@@ -265,6 +267,20 @@ public class OrderServiceImpl implements OrderService {
                         order.getId()
                 );
             }
+        }
+    }
+
+    private void sendLowStockNotificationIfNeeded(Product product, int previousStock, int updatedStock) {
+        int threshold = product.getLowStockThreshold() == null ? 5 : product.getLowStockThreshold();
+        if (previousStock > threshold && updatedStock <= threshold) {
+            notificationService.createNotification(
+                    product.getSeller().getId(),
+                    NotificationType.LOW_STOCK_ALERT,
+                    "Low stock alert",
+                    "Product '" + product.getName() + "' is low on stock. Current stock: " + updatedStock + ".",
+                    "PRODUCT",
+                    product.getId()
+            );
         }
     }
 

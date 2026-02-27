@@ -16,9 +16,13 @@ public interface ProductService {
 
     ProductResponse updateProduct(Long productId, String sellerEmail, ProductUpdateRequest request);
 
+    ProductResponse updateLowStockThreshold(Long productId, String sellerEmail, Integer lowStockThreshold);
+
     void deleteProduct(Long productId, String sellerEmail);
 
     List<ProductResponse> getSellerProducts(String sellerEmail);
+
+    List<ProductResponse> getMyLowStockProducts(String sellerEmail);
 
     List<ProductResponse> getAllActiveProducts();
 

@@ -30,9 +30,19 @@ public class Product extends BaseAuditEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "mrp_price", precision = 10, scale = 2)
+    private BigDecimal mrpPrice;
+
+    @Column(name = "discounted_price", precision = 10, scale = 2)
+    private BigDecimal discountedPrice;
+
     // ================= STOCK =================
     @Column(nullable = false)
     private Integer stock;
+
+    @Column(name = "low_stock_threshold")
+    @Builder.Default
+    private Integer lowStockThreshold = 5;
 
     @Column(name = "in_stock", nullable = false)
     @Builder.Default
