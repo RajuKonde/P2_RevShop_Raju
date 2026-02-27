@@ -11,6 +11,7 @@ import com.revshop.dto.order.OrderResponse;
 import com.revshop.dto.order.PlaceOrderRequest;
 import com.revshop.entity.Cart;
 import com.revshop.entity.CartItem;
+import com.revshop.entity.NotificationType;
 import com.revshop.entity.Order;
 import com.revshop.entity.OrderItem;
 import com.revshop.entity.OrderStatus;
@@ -20,13 +21,17 @@ import com.revshop.entity.User;
 import com.revshop.exception.BadRequestException;
 import com.revshop.exception.ForbiddenOperationException;
 import com.revshop.exception.ResourceNotFoundException;
+import com.revshop.service.NotificationService;
 import com.revshop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -39,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartItemDAO cartItemDAO;
     private final ProductDAO productDAO;
     private final UserDAO userDAO;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -80,6 +86,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         orderDAO.save(order);
 
+        List<OrderItem> createdOrderItems = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
             Product product = productDAO.findById(cartItem.getProduct().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + cartItem.getProduct().getId()));
@@ -96,7 +103,8 @@ public class OrderServiceImpl implements OrderService {
                     .lineTotal(lineTotal)
                     .active(true)
                     .build();
-            orderItemDAO.save(orderItem);
+            OrderItem savedOrderItem = orderItemDAO.save(orderItem);
+            createdOrderItems.add(savedOrderItem);
 
             int updatedStock = product.getStock() - cartItem.getQuantity();
             product.setStock(updatedStock);
@@ -111,6 +119,7 @@ public class OrderServiceImpl implements OrderService {
             cartItemDAO.save(cartItem);
         }
 
+        sendOrderNotifications(order, createdOrderItems);
         return buildOrderResponse(order);
     }
 
@@ -231,6 +240,32 @@ public class OrderServiceImpl implements OrderService {
                 .unitPrice(item.getUnitPrice())
                 .lineTotal(item.getLineTotal())
                 .build();
+    }
+
+    private void sendOrderNotifications(Order order, List<OrderItem> orderItems) {
+        notificationService.createNotification(
+                order.getBuyer().getId(),
+                NotificationType.ORDER_PLACED,
+                "Order placed successfully",
+                "Your order " + order.getOrderNumber() + " has been placed.",
+                "ORDER",
+                order.getId()
+        );
+
+        Set<Long> notifiedSellerIds = new HashSet<>();
+        for (OrderItem orderItem : orderItems) {
+            Long sellerId = orderItem.getSeller().getId();
+            if (notifiedSellerIds.add(sellerId)) {
+                notificationService.createNotification(
+                        sellerId,
+                        NotificationType.ORDER_RECEIVED,
+                        "New order received",
+                        "You received a new order " + order.getOrderNumber() + " from " + order.getBuyer().getEmail() + ".",
+                        "ORDER",
+                        order.getId()
+                );
+            }
+        }
     }
 
     private String generateOrderNumber() {
