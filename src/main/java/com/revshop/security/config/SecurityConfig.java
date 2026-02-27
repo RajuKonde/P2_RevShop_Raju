@@ -45,6 +45,18 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/error",
                                 "/uploads/**",
+                                "/",
+                                "/home",
+                                "/login",
+                                "/register",
+                                "/forgot-password",
+                                "/reset-password",
+                                "/buyer/**",
+                                "/seller/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico",
 
                                 // Swagger (optional)
                                 "/swagger-ui.html",
