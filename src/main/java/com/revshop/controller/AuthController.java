@@ -6,7 +6,12 @@ import com.revshop.dto.LoginResponseDTO;
 import com.revshop.dto.RegisterBuyerRequest;
 import com.revshop.dto.RegisterSellerRequest;
 import com.revshop.dto.UserResponse;
+import com.revshop.dto.common.ApiResponse;
+import com.revshop.dto.password.ForgotPasswordRequest;
+import com.revshop.dto.password.ForgotPasswordResponse;
+import com.revshop.dto.password.ResetPasswordRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.revshop.service.PasswordResetService;
 import com.revshop.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/register/buyer")
     public ResponseEntity<ApiResponse<UserResponse>> registerBuyer(
@@ -43,5 +49,21 @@ public class AuthController {
             @Valid @RequestBody LoginRequestDTO request) {
         LoginResponseDTO loginResponse = userService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Login successful", loginResponse));
+    }
+
+    @PostMapping("/password/forgot")
+    public ResponseEntity<ApiResponse<ForgotPasswordResponse>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request
+    ) {
+        ForgotPasswordResponse response = passwordResetService.generateResetToken(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success("Password reset token generated", response));
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success("Password reset successful", null));
     }
 }
