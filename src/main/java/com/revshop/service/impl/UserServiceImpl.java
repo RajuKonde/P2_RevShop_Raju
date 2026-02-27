@@ -3,7 +3,11 @@ package com.revshop.service.impl;
 import com.revshop.dao.UserDAO;
 import com.revshop.dto.LoginRequestDTO;
 import com.revshop.dto.LoginResponseDTO;
+import com.revshop.dto.RegisterBuyerRequest;
+import com.revshop.dto.RegisterSellerRequest;
+import com.revshop.dto.UserResponse;
 import com.revshop.entity.*;
+import com.revshop.mapper.AuthMapper;
 import com.revshop.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,41 +22,37 @@ public class UserServiceImpl implements UserService {
     private final UserDAO userDAO;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthMapper authMapper;
 
     // ==============================
     // REGISTER BUYER
     // ==============================
     @Override
     @Transactional
-    public User registerBuyer(String email,
-                              String rawPassword,
-                              String firstName,
-                              String lastName,
-                              String phone,
-                              String address) {
+    public UserResponse registerBuyer(RegisterBuyerRequest request) {
 
-        validateEmailUniqueness(email);
+        validateEmailUniqueness(request.getEmail());
 
-        String encryptedPassword = passwordEncoder.encode(rawPassword);
+        String encryptedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
-                .email(email)
+                .email(request.getEmail())
                 .password(encryptedPassword)
                 .role(Role.BUYER)
                 .active(true)
                 .build();
 
         BuyerProfile profile = BuyerProfile.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .phone(phone)
-                .address(address)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phone(request.getPhone())
+                .address(request.getAddress())
                 .user(user)
                 .build();
 
         user.setBuyerProfile(profile);
 
-        return userDAO.save(user);
+        return authMapper.toUserResponse(userDAO.save(user));
     }
 
     // ==============================
@@ -60,35 +60,30 @@ public class UserServiceImpl implements UserService {
     // ==============================
     @Override
     @Transactional
-    public User registerSeller(String email,
-                               String rawPassword,
-                               String businessName,
-                               String gstNumber,
-                               String phone,
-                               String businessAddress) {
+    public UserResponse registerSeller(RegisterSellerRequest request) {
 
-        validateEmailUniqueness(email);
+        validateEmailUniqueness(request.getEmail());
 
-        String encryptedPassword = passwordEncoder.encode(rawPassword);
+        String encryptedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
-                .email(email)
+                .email(request.getEmail())
                 .password(encryptedPassword)
                 .role(Role.SELLER)
                 .active(true)
                 .build();
 
         SellerProfile profile = SellerProfile.builder()
-                .businessName(businessName)
-                .gstNumber(gstNumber)
-                .phone(phone)
-                .businessAddress(businessAddress)
+                .businessName(request.getBusinessName())
+                .gstNumber(request.getGstNumber())
+                .phone(request.getPhone())
+                .businessAddress(request.getBusinessAddress())
                 .user(user)
                 .build();
 
         user.setSellerProfile(profile);
 
-        return userDAO.save(user);
+        return authMapper.toUserResponse(userDAO.save(user));
     }
 
     // ==============================
@@ -125,9 +120,10 @@ public class UserServiceImpl implements UserService {
     // ==============================
     @Override
     @Transactional(readOnly = true)
-    public User getByEmail(String email) {
-        return userDAO.findByEmail(email)
+    public UserResponse getByEmail(String email) {
+        User user = userDAO.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return authMapper.toUserResponse(user);
     }
 
     // ==============================
