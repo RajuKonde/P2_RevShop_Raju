@@ -113,7 +113,15 @@ public class GlobalExceptionHandler {
             DataIntegrityViolationException ex,
             HttpServletRequest request
     ) {
+        String requestPath = request.getRequestURI() == null ? "" : request.getRequestURI();
+        String rootMessage = ex.getMostSpecificCause() == null ? "" : ex.getMostSpecificCause().getMessage();
+
         String message = "Data conflict: resource already exists or violates constraints";
+        if (requestPath.startsWith("/api/categories")) {
+            message = "Category name already exists. Use a different name or edit existing category.";
+        } else if (rootMessage.contains("ORA-00001")) {
+            message = "Duplicate data detected. A record with same unique value already exists.";
+        }
         return buildError(HttpStatus.CONFLICT, message, request.getRequestURI(), null);
     }
 
