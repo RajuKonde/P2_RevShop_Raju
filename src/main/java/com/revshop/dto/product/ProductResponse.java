@@ -16,7 +16,10 @@ public class ProductResponse {
     private String name;
     private String description;
     private BigDecimal price;
+    private BigDecimal mrpPrice;
+    private BigDecimal discountedPrice;
     private Integer stock;
+    private Integer lowStockThreshold;
     private Boolean inStock;
     private Boolean active;
     private ProductStatus status;

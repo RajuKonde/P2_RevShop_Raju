@@ -249,4 +249,18 @@ public class ProductDAOImpl implements ProductDAO {
                 .getSingleResult();
         return count == null ? 0 : count;
     }
+
+    @Override
+    public List<Product> findLowStockBySellerEmail(String sellerEmail) {
+        return em.createQuery("""
+                SELECT p FROM Product p
+                WHERE p.seller.email = :sellerEmail
+                AND p.active = true
+                AND p.isDeleted = false
+                AND p.stock <= COALESCE(p.lowStockThreshold, 5)
+                ORDER BY p.stock ASC, p.updatedAt DESC
+                """, Product.class)
+                .setParameter("sellerEmail", sellerEmail)
+                .getResultList();
+    }
 }

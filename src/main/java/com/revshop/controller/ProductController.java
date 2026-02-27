@@ -6,6 +6,7 @@ import com.revshop.dto.product.ProductCreateRequest;
 import com.revshop.dto.product.ProductImageResponse;
 import com.revshop.dto.product.ProductResponse;
 import com.revshop.dto.product.ProductUpdateRequest;
+import com.revshop.dto.product.UpdateLowStockThresholdRequest;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.ProductService;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -65,6 +67,12 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<ProductResponse>>> myProducts(Authentication auth) {
         List<ProductResponse> response = productService.getSellerProducts(auth.getName());
         return ResponseEntity.ok(ApiResponse.success("Seller products fetched", response));
+    }
+
+    @GetMapping("/my/low-stock")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> myLowStockProducts(Authentication auth) {
+        List<ProductResponse> response = productService.getMyLowStockProducts(auth.getName());
+        return ResponseEntity.ok(ApiResponse.success("Low stock products fetched", response));
     }
 
     @GetMapping("/public")
@@ -135,5 +143,15 @@ public class ProductController {
     ) {
         productService.deleteProductImage(productId, imageId, auth.getName());
         return ResponseEntity.ok(ApiResponse.success("Product image deleted successfully", null));
+    }
+
+    @PatchMapping("/{id}/low-stock-threshold")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateLowStockThreshold(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateLowStockThresholdRequest request,
+            Authentication auth
+    ) {
+        ProductResponse response = productService.updateLowStockThreshold(id, auth.getName(), request.getLowStockThreshold());
+        return ResponseEntity.ok(ApiResponse.success("Low stock threshold updated", response));
     }
 }

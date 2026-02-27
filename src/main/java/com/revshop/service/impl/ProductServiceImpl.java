@@ -40,6 +40,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    private static final int DEFAULT_LOW_STOCK_THRESHOLD = 5;
+
     private final ProductDAO productDAO;
     private final ProductImageDAO productImageDAO;
     private final CategoryDAO categoryDAO;
@@ -63,11 +65,18 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryDAO.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
+        BigDecimal mrpPrice = resolveMrpPrice(request.getPrice(), request.getMrpPrice());
+        BigDecimal discountedPrice = resolveDiscountedPrice(request.getPrice(), request.getDiscountedPrice(), mrpPrice);
+        validatePricing(mrpPrice, discountedPrice);
+
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .price(request.getPrice())
+                .price(discountedPrice)
+                .mrpPrice(mrpPrice)
+                .discountedPrice(discountedPrice)
                 .stock(request.getStock())
+                .lowStockThreshold(resolveLowStockThreshold(request.getLowStockThreshold()))
                 .inStock(request.getStock() > 0)
                 .active(true)
                 .seller(seller)
@@ -81,13 +90,31 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse updateProduct(Long productId, String sellerEmail, ProductUpdateRequest request) {
         Product product = getOwnedProduct(productId, sellerEmail);
+        BigDecimal mrpPrice = resolveMrpPrice(request.getPrice(), request.getMrpPrice());
+        BigDecimal discountedPrice = resolveDiscountedPrice(request.getPrice(), request.getDiscountedPrice(), mrpPrice);
+        validatePricing(mrpPrice, discountedPrice);
 
         product.setName(request.getName());
         product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
+        product.setPrice(discountedPrice);
+        product.setMrpPrice(mrpPrice);
+        product.setDiscountedPrice(discountedPrice);
         product.setStock(request.getStock());
+        if (request.getLowStockThreshold() != null) {
+            product.setLowStockThreshold(resolveLowStockThreshold(request.getLowStockThreshold()));
+        } else if (product.getLowStockThreshold() == null) {
+            product.setLowStockThreshold(DEFAULT_LOW_STOCK_THRESHOLD);
+        }
         product.setInStock(request.getStock() > 0);
 
+        return productMapper.toResponse(productDAO.save(product));
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse updateLowStockThreshold(Long productId, String sellerEmail, Integer lowStockThreshold) {
+        Product product = getOwnedProduct(productId, sellerEmail);
+        product.setLowStockThreshold(resolveLowStockThreshold(lowStockThreshold));
         return productMapper.toResponse(productDAO.save(product));
     }
 
@@ -104,6 +131,15 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<ProductResponse> getSellerProducts(String sellerEmail) {
         return productDAO.findBySellerEmail(sellerEmail)
+                .stream()
+                .map(productMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getMyLowStockProducts(String sellerEmail) {
+        return productDAO.findLowStockBySellerEmail(sellerEmail)
                 .stream()
                 .map(productMapper::toResponse)
                 .toList();
@@ -266,6 +302,44 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return product;
+    }
+
+    private BigDecimal resolveMrpPrice(BigDecimal fallbackPrice, BigDecimal mrpPrice) {
+        if (mrpPrice != null) {
+            return mrpPrice;
+        }
+        return fallbackPrice;
+    }
+
+    private BigDecimal resolveDiscountedPrice(BigDecimal fallbackPrice, BigDecimal discountedPrice, BigDecimal mrpPrice) {
+        BigDecimal resolvedDiscounted = discountedPrice == null ? fallbackPrice : discountedPrice;
+        if (resolvedDiscounted == null) {
+            throw new BadRequestException("Price is required");
+        }
+        if (mrpPrice == null) {
+            throw new BadRequestException("MRP price is required");
+        }
+        return resolvedDiscounted;
+    }
+
+    private int resolveLowStockThreshold(Integer lowStockThreshold) {
+        int resolved = lowStockThreshold == null ? DEFAULT_LOW_STOCK_THRESHOLD : lowStockThreshold;
+        if (resolved < 0) {
+            throw new BadRequestException("Low stock threshold cannot be negative");
+        }
+        return resolved;
+    }
+
+    private void validatePricing(BigDecimal mrpPrice, BigDecimal discountedPrice) {
+        if (mrpPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("MRP must be greater than 0");
+        }
+        if (discountedPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Discounted price must be greater than 0");
+        }
+        if (discountedPrice.compareTo(mrpPrice) > 0) {
+            throw new BadRequestException("Discounted price cannot be greater than MRP");
+        }
     }
 
     private ProductImageResponse saveProductImage(Product product, MultipartFile file, long orderValue) {
