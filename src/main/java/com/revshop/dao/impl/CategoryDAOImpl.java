@@ -51,6 +51,17 @@ public class CategoryDAOImpl implements CategoryDAO {
     }
 
     @Override
+    public Optional<Category> findAnyByName(String name) {
+        return em.createQuery("""
+                SELECT c FROM Category c
+                WHERE LOWER(c.name) = LOWER(:name)
+                """, Category.class)
+                .setParameter("name", name)
+                .getResultStream()
+                .findFirst();
+    }
+
+    @Override
     public List<Category> findAllActive() {
         return em.createQuery("""
                 SELECT c FROM Category c

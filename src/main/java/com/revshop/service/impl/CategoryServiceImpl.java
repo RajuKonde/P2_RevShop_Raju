@@ -36,8 +36,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponse createCategory(String sellerEmail, CategoryCreateRequest request) {
         validateSeller(sellerEmail);
+        String normalizedName = normalizeName(request.getName());
 
-        if (categoryDAO.existsByName(request.getName())) {
+        if (categoryDAO.existsByName(normalizedName)) {
             throw new ConflictException("Category name already exists");
         }
 
@@ -47,8 +48,21 @@ public class CategoryServiceImpl implements CategoryService {
                     .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
         }
 
+        Category archived = categoryDAO.findAnyByName(normalizedName).orElse(null);
+        if (archived != null && Boolean.TRUE.equals(archived.getIsDeleted())) {
+            if (parent != null && parent.getId().equals(archived.getId())) {
+                throw new BadRequestException("Category cannot be its own parent");
+            }
+            archived.setName(normalizedName);
+            archived.setDescription(request.getDescription());
+            archived.setParent(parent);
+            archived.setActive(true);
+            archived.setIsDeleted(false);
+            return mapToResponse(categoryDAO.save(archived));
+        }
+
         Category category = Category.builder()
-                .name(request.getName())
+                .name(normalizedName)
                 .description(request.getDescription())
                 .parent(parent)
                 .active(true)
@@ -61,11 +75,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponse updateCategory(Long categoryId, String sellerEmail, CategoryUpdateRequest request) {
         validateSeller(sellerEmail);
+        String normalizedName = normalizeName(request.getName());
 
         Category category = categoryDAO.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        Category duplicate = categoryDAO.findBySlug(request.getName()).orElse(null);
+        Category duplicate = categoryDAO.findAnyByName(normalizedName).orElse(null);
         if (duplicate != null && !duplicate.getId().equals(category.getId())) {
             throw new ConflictException("Category name already exists");
         }
@@ -80,7 +95,7 @@ public class CategoryServiceImpl implements CategoryService {
             validateNoCycle(category, parent);
         }
 
-        category.setName(request.getName());
+        category.setName(normalizedName);
         category.setDescription(request.getDescription());
         category.setParent(parent);
 
@@ -197,5 +212,12 @@ public class CategoryServiceImpl implements CategoryService {
         if (!Boolean.TRUE.equals(seller.getActive()) || Boolean.TRUE.equals(seller.getIsDeleted())) {
             throw new ForbiddenOperationException("Seller account is inactive");
         }
+    }
+
+    private String normalizeName(String name) {
+        if (name == null) {
+            throw new BadRequestException("Category name is required");
+        }
+        return name.trim();
     }
 }

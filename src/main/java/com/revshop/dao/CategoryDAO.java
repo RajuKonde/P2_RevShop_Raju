@@ -13,6 +13,8 @@ public interface CategoryDAO {
 
     Optional<Category> findBySlug(String slug);
 
+    Optional<Category> findAnyByName(String name);
+
     List<Category> findAllActive();
 
     List<Category> findAllActiveWithParent();

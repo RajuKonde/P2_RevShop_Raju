@@ -6,6 +6,8 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -104,6 +106,24 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return buildError(HttpStatus.BAD_REQUEST, "Malformed request body", request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+        String message = "Data conflict: resource already exists or violates constraints";
+        return buildError(HttpStatus.CONFLICT, message, request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(TransactionSystemException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTransactionSystem(
+            TransactionSystemException ex,
+            HttpServletRequest request
+    ) {
+        String message = "Transaction failed due to invalid data";
+        return buildError(HttpStatus.BAD_REQUEST, message, request.getRequestURI(), null);
     }
 
     @ExceptionHandler(Exception.class)
