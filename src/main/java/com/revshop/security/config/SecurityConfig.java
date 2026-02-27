@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/uploads/**",
 
                                 // Swagger (optional)
+                                "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

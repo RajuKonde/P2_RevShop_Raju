@@ -6,6 +6,8 @@ import com.revshop.dto.product.ProductCreateRequest;
 import com.revshop.dto.product.ProductImageResponse;
 import com.revshop.dto.product.ProductResponse;
 import com.revshop.dto.product.ProductUpdateRequest;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+@Tag(name = "Products", description = "Product management and product catalog APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class ProductController {
 
     private final ProductService productService;
