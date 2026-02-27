@@ -4,6 +4,8 @@ import com.revshop.dto.cart.AddToCartRequest;
 import com.revshop.dto.cart.CartResponse;
 import com.revshop.dto.cart.UpdateCartItemRequest;
 import com.revshop.dto.common.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
+@Tag(name = "Cart", description = "Buyer cart operations")
+@SecurityRequirement(name = "bearerAuth")
 public class CartController {
 
     private final CartService cartService;

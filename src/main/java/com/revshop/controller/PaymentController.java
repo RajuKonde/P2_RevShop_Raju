@@ -3,6 +3,8 @@ package com.revshop.controller;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.payment.PaymentResponse;
 import com.revshop.dto.payment.ProcessPaymentRequest;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
+@Tag(name = "Payments", description = "Mock payment processing and payment tracking APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class PaymentController {
 
     private final PaymentService paymentService;

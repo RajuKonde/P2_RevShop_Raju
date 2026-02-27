@@ -6,6 +6,7 @@ import com.revshop.dto.LoginResponseDTO;
 import com.revshop.dto.RegisterBuyerRequest;
 import com.revshop.dto.RegisterSellerRequest;
 import com.revshop.dto.UserResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "Authentication and registration APIs")
 public class AuthController {
 
     private final UserService userService;

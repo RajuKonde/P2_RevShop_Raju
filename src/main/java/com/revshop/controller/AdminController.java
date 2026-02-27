@@ -6,6 +6,8 @@ import com.revshop.dto.admin.AdminUserStatusUpdateRequest;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.common.PagedResponse;
 import com.revshop.entity.Role;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@Tag(name = "Admin", description = "Privileged admin-ready APIs protected by JWT + X-ADMIN-KEY")
+@SecurityRequirement(name = "bearerAuth")
 public class AdminController {
 
     private final AdminService adminService;
