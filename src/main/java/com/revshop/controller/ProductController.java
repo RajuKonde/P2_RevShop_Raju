@@ -2,6 +2,7 @@ package com.revshop.controller;
 
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.product.ProductCreateRequest;
+import com.revshop.dto.product.ProductImageResponse;
 import com.revshop.dto.product.ProductResponse;
 import com.revshop.dto.product.ProductUpdateRequest;
 import com.revshop.service.ProductService;
@@ -9,7 +10,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -73,5 +83,31 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<ProductResponse>>> search(@RequestParam String keyword) {
         List<ProductResponse> response = productService.searchProducts(keyword);
         return ResponseEntity.ok(ApiResponse.success("Search results fetched", response));
+    }
+
+    @PostMapping("/{productId}/images")
+    public ResponseEntity<ApiResponse<List<ProductImageResponse>>> uploadImages(
+            @PathVariable Long productId,
+            @RequestParam("files") List<MultipartFile> files,
+            Authentication auth
+    ) {
+        List<ProductImageResponse> response = productService.uploadProductImages(productId, auth.getName(), files);
+        return ResponseEntity.ok(ApiResponse.success("Product images uploaded successfully", response));
+    }
+
+    @GetMapping("/{productId}/images")
+    public ResponseEntity<ApiResponse<List<ProductImageResponse>>> getImages(@PathVariable Long productId) {
+        List<ProductImageResponse> response = productService.getProductImages(productId);
+        return ResponseEntity.ok(ApiResponse.success("Product images fetched", response));
+    }
+
+    @DeleteMapping("/{productId}/images/{imageId}")
+    public ResponseEntity<ApiResponse<Void>> deleteImage(
+            @PathVariable Long productId,
+            @PathVariable Long imageId,
+            Authentication auth
+    ) {
+        productService.deleteProductImage(productId, imageId, auth.getName());
+        return ResponseEntity.ok(ApiResponse.success("Product image deleted successfully", null));
     }
 }

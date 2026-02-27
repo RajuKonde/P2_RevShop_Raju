@@ -48,6 +48,14 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
     }
 
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInternalServer(
+            InternalServerException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI(), null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(
             MethodArgumentNotValidException ex,

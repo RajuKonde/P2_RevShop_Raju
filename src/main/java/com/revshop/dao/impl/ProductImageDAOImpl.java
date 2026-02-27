@@ -7,6 +7,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ProductImageDAOImpl implements ProductImageDAO {
@@ -32,6 +33,28 @@ public class ProductImageDAOImpl implements ProductImageDAO {
                 """, ProductImage.class)
                 .setParameter("productId", productId)
                 .getResultList();
+    }
+
+    @Override
+    public Optional<ProductImage> findById(Long imageId) {
+        return Optional.ofNullable(em.find(ProductImage.class, imageId));
+    }
+
+    @Override
+    public long countByProductId(Long productId) {
+        Long count = em.createQuery("""
+                SELECT COUNT(i) FROM ProductImage i
+                WHERE i.product.id = :productId
+                """, Long.class)
+                .setParameter("productId", productId)
+                .getSingleResult();
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public void delete(ProductImage image) {
+        ProductImage managed = em.contains(image) ? image : em.merge(image);
+        em.remove(managed);
     }
 
     @Override
