@@ -1,6 +1,7 @@
 package com.revshop.controller;
 
 import com.revshop.dto.common.ApiResponse;
+import com.revshop.dto.common.PagedResponse;
 import com.revshop.dto.product.ProductCreateRequest;
 import com.revshop.dto.product.ProductImageResponse;
 import com.revshop.dto.product.ProductResponse;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -80,8 +82,28 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<ProductResponse>>> search(@RequestParam String keyword) {
-        List<ProductResponse> response = productService.searchProducts(keyword);
+    public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Boolean inStock,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
+    ) {
+        PagedResponse<ProductResponse> response = productService.searchProducts(
+                keyword,
+                categoryId,
+                minPrice,
+                maxPrice,
+                inStock,
+                page,
+                size,
+                sortBy,
+                sortDir
+        );
         return ResponseEntity.ok(ApiResponse.success("Search results fetched", response));
     }
 
