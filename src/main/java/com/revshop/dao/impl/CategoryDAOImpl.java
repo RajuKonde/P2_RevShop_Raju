@@ -41,7 +41,7 @@ public class CategoryDAOImpl implements CategoryDAO {
     public Optional<Category> findBySlug(String slug) {
         return em.createQuery("""
                 SELECT c FROM Category c
-                WHERE LOWER(c.name) = LOWER(:slug)
+                WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(:slug))
                 AND c.active = true
                 AND c.isDeleted = false
                 """, Category.class)
@@ -54,7 +54,8 @@ public class CategoryDAOImpl implements CategoryDAO {
     public Optional<Category> findAnyByName(String name) {
         return em.createQuery("""
                 SELECT c FROM Category c
-                WHERE LOWER(c.name) = LOWER(:name)
+                WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(:name))
+                ORDER BY c.id DESC
                 """, Category.class)
                 .setParameter("name", name)
                 .getResultStream()
@@ -89,7 +90,7 @@ public class CategoryDAOImpl implements CategoryDAO {
     public boolean existsByName(String name) {
         Long count = em.createQuery("""
                 SELECT COUNT(c) FROM Category c
-                WHERE LOWER(c.name) = LOWER(:name)
+                WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(:name))
                 AND c.isDeleted = false
                 """, Long.class)
                 .setParameter("name", name)

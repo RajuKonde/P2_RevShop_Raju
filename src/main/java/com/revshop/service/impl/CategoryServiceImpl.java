@@ -38,27 +38,26 @@ public class CategoryServiceImpl implements CategoryService {
         validateSeller(sellerEmail);
         String normalizedName = normalizeName(request.getName());
 
-        if (categoryDAO.existsByName(normalizedName)) {
-            throw new ConflictException("Category name already exists");
-        }
-
         Category parent = null;
         if (request.getParentId() != null) {
             parent = categoryDAO.findById(request.getParentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
         }
 
-        Category archived = categoryDAO.findAnyByName(normalizedName).orElse(null);
-        if (archived != null && Boolean.TRUE.equals(archived.getIsDeleted())) {
-            if (parent != null && parent.getId().equals(archived.getId())) {
+        Category existing = categoryDAO.findAnyByName(normalizedName).orElse(null);
+        if (existing != null) {
+            if (Boolean.TRUE.equals(existing.getActive()) && Boolean.FALSE.equals(existing.getIsDeleted())) {
+                throw new ConflictException("Category name already exists");
+            }
+            if (parent != null && parent.getId().equals(existing.getId())) {
                 throw new BadRequestException("Category cannot be its own parent");
             }
-            archived.setName(normalizedName);
-            archived.setDescription(request.getDescription());
-            archived.setParent(parent);
-            archived.setActive(true);
-            archived.setIsDeleted(false);
-            return mapToResponse(categoryDAO.save(archived));
+            existing.setName(normalizedName);
+            existing.setDescription(request.getDescription());
+            existing.setParent(parent);
+            existing.setActive(true);
+            existing.setIsDeleted(false);
+            return mapToResponse(categoryDAO.save(existing));
         }
 
         Category category = Category.builder()
@@ -218,6 +217,6 @@ public class CategoryServiceImpl implements CategoryService {
         if (name == null) {
             throw new BadRequestException("Category name is required");
         }
-        return name.trim();
+        return name.trim().replaceAll("\\s+", " ");
     }
 }
