@@ -21,12 +21,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
         response.getWriter().write("""
-        {
-          "error": "Unauthorized",
-          "message": "JWT token is missing or invalid"
-        }
-        """);
+                {
+                  "status": 401,
+                  "error": "Unauthorized",
+                  "message": "JWT token is missing or invalid",
+                  "path": "%s"
+                }
+                """.formatted(request.getRequestURI()));
     }
 }
