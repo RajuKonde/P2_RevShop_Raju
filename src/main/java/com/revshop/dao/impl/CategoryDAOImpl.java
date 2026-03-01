@@ -41,9 +41,7 @@ public class CategoryDAOImpl implements CategoryDAO {
     public Optional<Category> findBySlug(String slug) {
         return em.createQuery("""
                 SELECT c FROM Category c
-                WHERE LOWER(TRIM(c.name)) = LOWER(TRIM(:slug))
-                AND c.active = true
-                AND c.isDeleted = false
+                WHERE LOWER(TRIM(c.slug)) = LOWER(TRIM(:slug))
                 """, Category.class)
                 .setParameter("slug", slug)
                 .getResultStream()

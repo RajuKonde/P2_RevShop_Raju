@@ -3,6 +3,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const app = window.RevShopApp;
     if (!app.ensureRole("SELLER")) return;
+    const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
     app.mountShell({
         active: "products",
@@ -253,6 +254,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const file = imageFileInput.files[0];
         if (!productId || !file) {
             app.showToast("Select a product and image file", "error");
+            return;
+        }
+        if (file.type && !file.type.startsWith("image/")) {
+            app.showToast("Only image files are allowed", "error");
+            return;
+        }
+        if (file.size > MAX_IMAGE_SIZE_BYTES) {
+            app.showToast("Image is too large. Max allowed size is 10MB", "error");
             return;
         }
 

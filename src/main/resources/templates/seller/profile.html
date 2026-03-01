@@ -16,19 +16,40 @@
 <main class="container pb-5 page-section">
     <div class="row g-4">
         <section class="col-lg-5">
-            <div class="market-card p-3 p-md-4">
-                <h5 class="card-title">Account Snapshot</h5>
-                <div class="small market-muted mb-2">Email</div>
-                <div class="fw-semibold mb-3" id="emailText">-</div>
-                <div class="small market-muted mb-2">Role</div>
-                <div class="fw-semibold mb-3" id="roleText">-</div>
-                <div class="small market-muted mb-2">Status</div>
-                <div class="fw-semibold" id="statusText">-</div>
+            <div class="market-card profile-card p-3 p-md-4">
+                <div class="profile-hero mb-3">
+                    <img id="profilePhotoPreview"
+                         class="profile-avatar"
+                         src="/images/profile/avatar-placeholder.svg"
+                         alt="Profile photo">
+                    <div>
+                        <h5 class="card-title mb-1">Seller Account</h5>
+                        <p class="market-muted mb-0">Store branding and verified identity</p>
+                    </div>
+                </div>
+
+                <form id="photoUploadForm" class="profile-photo-form vstack gap-2 mb-4">
+                    <label class="form-label mb-0">Profile Photo</label>
+                    <input id="photoFileInput"
+                           class="form-control market-input"
+                           type="file"
+                           accept="image/*">
+                    <button class="btn btn-outline-primary market-btn" type="submit">Upload Photo</button>
+                </form>
+
+                <div class="profile-meta">
+                    <div class="small market-muted mb-1">Email</div>
+                    <div class="fw-semibold mb-3 text-break" id="emailText">-</div>
+                    <div class="small market-muted mb-1">Role</div>
+                    <div class="fw-semibold mb-3" id="roleText">-</div>
+                    <div class="small market-muted mb-1">Status</div>
+                    <div class="fw-semibold" id="statusText">-</div>
+                </div>
             </div>
         </section>
 
         <section class="col-lg-7">
-            <div class="market-card p-3 p-md-4">
+            <div class="market-card p-3 p-md-4 profile-form-card">
                 <h5 class="card-title mb-3">Update Seller Profile</h5>
                 <form id="sellerProfileForm" class="vstack gap-3">
                     <div>

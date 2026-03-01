@@ -100,8 +100,17 @@ public class OrderItemDAOImpl implements OrderItemDAO {
                 AND oi.isDeleted = false
                 AND o.active = true
                 AND o.isDeleted = false
+                AND o.status IN :salesStatuses
                 """, Long.class)
                 .setParameter("sellerEmail", sellerEmail)
+                .setParameter("salesStatuses", List.of(
+                        OrderStatus.CONFIRMED,
+                        OrderStatus.SHIPPED,
+                        OrderStatus.DELIVERED,
+                        OrderStatus.RETURN_REQUESTED,
+                        OrderStatus.EXCHANGE_REQUESTED,
+                        OrderStatus.EXCHANGED
+                ))
                 .getSingleResult();
         return count == null ? 0 : count;
     }
@@ -116,8 +125,17 @@ public class OrderItemDAOImpl implements OrderItemDAO {
                 AND oi.isDeleted = false
                 AND o.active = true
                 AND o.isDeleted = false
+                AND o.status IN :salesStatuses
                 """, BigDecimal.class)
                 .setParameter("sellerEmail", sellerEmail)
+                .setParameter("salesStatuses", List.of(
+                        OrderStatus.CONFIRMED,
+                        OrderStatus.SHIPPED,
+                        OrderStatus.DELIVERED,
+                        OrderStatus.RETURN_REQUESTED,
+                        OrderStatus.EXCHANGE_REQUESTED,
+                        OrderStatus.EXCHANGED
+                ))
                 .getSingleResult();
         return total == null ? BigDecimal.ZERO : total;
     }
@@ -134,10 +152,19 @@ public class OrderItemDAOImpl implements OrderItemDAO {
                 AND oi.isDeleted = false
                 AND o.active = true
                 AND o.isDeleted = false
+                AND o.status IN :salesStatuses
                 GROUP BY p.id, p.name, p.stock
                 ORDER BY SUM(oi.lineTotal) DESC
                 """, Object[].class)
                 .setParameter("sellerEmail", sellerEmail)
+                .setParameter("salesStatuses", List.of(
+                        OrderStatus.CONFIRMED,
+                        OrderStatus.SHIPPED,
+                        OrderStatus.DELIVERED,
+                        OrderStatus.RETURN_REQUESTED,
+                        OrderStatus.EXCHANGE_REQUESTED,
+                        OrderStatus.EXCHANGED
+                ))
                 .setMaxResults(Math.max(1, limit))
                 .getResultList();
     }

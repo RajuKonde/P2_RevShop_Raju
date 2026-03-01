@@ -62,6 +62,18 @@ public class Order extends BaseAuditEntity {
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(name = "cancel_reason", length = 500)
+    private String cancelReason;
+
+    @Column(name = "return_reason", length = 500)
+    private String returnReason;
+
+    @Column(name = "exchange_reason", length = 500)
+    private String exchangeReason;
+
+    @Column(name = "exchange_product_id")
+    private Long exchangeRequestedProductId;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean active = true;

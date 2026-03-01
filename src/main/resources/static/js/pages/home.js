@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const app = window.RevShopApp;
     app.mountShell({
         active: "home",
-        title: "Discover. Compare. Buy.",
-        subtitle: "Premium marketplace experience backed by enterprise APIs."
+        title: "RevShop - Premium Shopping Destination",
+        subtitle: "Explore premium quality clothes, smart electronics, and trusted daily essentials from verified sellers."
     });
 
     const state = {
@@ -69,7 +69,83 @@ document.addEventListener("DOMContentLoaded", () => {
         return params.toString();
     }
 
-    function renderProducts(products) {
+    function buildStars(rating) {
+        const value = Number.isFinite(Number(rating)) ? Number(rating) : 0;
+        const safe = Math.max(0, Math.min(5, Math.round(value)));
+        return `Rating ${safe}/5`;
+    }
+
+    function reviewerLabel(email) {
+        if (!email) return "Verified Buyer";
+        const atIndex = email.indexOf("@");
+        const local = atIndex > 0 ? email.slice(0, atIndex) : email;
+        const visible = local.slice(0, 2);
+        return `${visible}${"*".repeat(Math.max(1, local.length - 2))}`;
+    }
+
+    function summarizeReviews(reviews) {
+        const items = Array.isArray(reviews) ? reviews : [];
+        if (items.length === 0) {
+            return { totalReviews: 0, averageRating: null, latestReviews: [] };
+        }
+        const ratingSum = items.reduce((sum, review) => sum + Number(review.rating || 0), 0);
+        const averageRating = ratingSum / items.length;
+        return {
+            totalReviews: items.length,
+            averageRating,
+            latestReviews: items.slice(0, 2)
+        };
+    }
+
+    function renderReviewBlock(reviewData) {
+        if (!reviewData || reviewData.totalReviews === 0) {
+            return `
+                <div class="product-review-block mt-3">
+                    <div class="small fw-semibold mb-1">Customer Reviews</div>
+                    <div class="small market-muted">No reviews yet.</div>
+                </div>
+            `;
+        }
+
+        const averageLabel = Number(reviewData.averageRating || 0).toFixed(1);
+        const latest = (reviewData.latestReviews || []).map((review) => {
+            const headline = review.title || "Verified purchase review";
+            const detail = review.comment || "";
+            return `
+                <div class="product-review-item">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <span class="reviewer-tag">${app.escapeHtml(reviewerLabel(review.buyerEmail))}</span>
+                        <span class="review-stars">${app.escapeHtml(buildStars(review.rating))}</span>
+                    </div>
+                    <div class="small fw-semibold mt-1">${app.escapeHtml(headline)}</div>
+                    ${detail ? `<div class="small market-muted">${app.escapeHtml(detail)}</div>` : ""}
+                </div>
+            `;
+        }).join("");
+
+        return `
+            <div class="product-review-block mt-3">
+                <div class="small fw-semibold mb-1">Customer Reviews</div>
+                <div class="small market-muted mb-2">${app.escapeHtml(averageLabel)}/5 from ${reviewData.totalReviews} review(s)</div>
+                ${latest}
+            </div>
+        `;
+    }
+
+    async function fetchReviewInsights(products) {
+        const uniqueIds = [...new Set((products || []).map((p) => Number(p.id)).filter((id) => Number.isInteger(id) && id > 0))];
+        const entries = await Promise.all(uniqueIds.map(async (productId) => {
+            try {
+                const reviews = await app.api(`/reviews/product/${productId}`);
+                return [productId, summarizeReviews(reviews)];
+            } catch (error) {
+                return [productId, summarizeReviews([])];
+            }
+        }));
+        return new Map(entries);
+    }
+
+    function renderProducts(products, reviewInsights = new Map()) {
         productGrid.innerHTML = "";
         if (!products || products.length === 0) {
             emptyCatalog.classList.remove("d-none");
@@ -82,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
         products.forEach((product) => {
             const col = document.createElement("div");
             col.className = "col-md-6 col-xl-4";
+            const reviewData = reviewInsights.get(Number(product.id)) || summarizeReviews([]);
 
             const imageUrl = product.imageUrls && product.imageUrls.length > 0
                 ? product.imageUrls[0]
@@ -112,6 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     : `<button class="btn btn-outline-secondary market-btn" disabled>Login as Buyer to purchase</button>`
                             }
                         </div>
+                        ${renderReviewBlock(reviewData)}
                     </div>
                 </article>
             `;
@@ -142,7 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const query = buildSearchQuery();
             const result = await app.api(`/products/search?${query}`);
-            renderProducts(result.content || []);
+            const products = result.content || [];
+            const reviewInsights = await fetchReviewInsights(products);
+            renderProducts(products, reviewInsights);
             renderPagination(result);
             catalogMeta.textContent = `${result.totalElements ?? 0} products found`;
         } catch (error) {

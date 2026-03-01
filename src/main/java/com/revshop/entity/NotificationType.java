@@ -3,5 +3,12 @@ package com.revshop.entity;
 public enum NotificationType {
     ORDER_PLACED,
     ORDER_RECEIVED,
-    LOW_STOCK_ALERT
+    ORDER_SHIPPED,
+    ORDER_DELIVERED,
+    LOW_STOCK_ALERT,
+    ORDER_CANCELLED,
+    RETURN_REQUESTED,
+    RETURN_COMPLETED,
+    EXCHANGE_REQUESTED,
+    EXCHANGE_COMPLETED
 }

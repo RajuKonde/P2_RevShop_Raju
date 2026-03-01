@@ -44,8 +44,8 @@ public class PaymentServiceImpl implements PaymentService {
         validateOrderForPayment(order);
 
         Payment existing = paymentDAO.findByOrderId(order.getId()).orElse(null);
-        if (existing != null && existing.getStatus() == PaymentStatus.SUCCESS) {
-            throw new ConflictException("Payment already completed for this order");
+        if (existing != null && (existing.getStatus() == PaymentStatus.SUCCESS || existing.getStatus() == PaymentStatus.PENDING)) {
+            throw new ConflictException("Payment already processed for this order");
         }
 
         PaymentStatus status = resolveMockStatus(order.getPaymentMethod(), request.getSimulateFailure());
@@ -121,7 +121,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (!Boolean.TRUE.equals(order.getActive()) || Boolean.TRUE.equals(order.getIsDeleted())) {
             throw new ResourceNotFoundException("Order not found");
         }
-        if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.DELIVERED) {
+        if (order.getStatus() != OrderStatus.PLACED && order.getStatus() != OrderStatus.CONFIRMED) {
             throw new BadRequestException("Payment cannot be processed for this order status");
         }
     }

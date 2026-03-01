@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -347,14 +348,14 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("Empty file is not allowed");
         }
 
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
+        String originalFilename = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
+        String extension = extractExtension(originalFilename);
+        if (!isImageFile(file, extension)) {
             throw new BadRequestException("Only image files are allowed");
         }
 
-        String originalFilename = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
-        String extension = extractExtension(originalFilename);
-        String fileName = UUID.randomUUID() + extension;
+        String safeExtension = extension.isBlank() ? ".jpg" : extension;
+        String fileName = UUID.randomUUID() + safeExtension;
 
         Path uploadDir = Paths.get(productImagesDir).toAbsolutePath().normalize();
         Path destination = uploadDir.resolve(fileName).normalize();
@@ -367,10 +368,11 @@ public class ProductServiceImpl implements ProductService {
         }
 
         int order = (int) orderValue;
-        String imageUrl = publicBaseUrl + "/uploads/product-images/" + fileName;
+        String imageUrl = buildImageUrl(fileName);
 
         ProductImage image = ProductImage.builder()
                 .imageUrl(imageUrl)
+                .thumbnail(order == 1)
                 .displayOrder(order)
                 .product(product)
                 .build();
@@ -386,9 +388,35 @@ public class ProductServiceImpl implements ProductService {
     private String extractExtension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
-            return ".jpg";
+            return "";
         }
         return fileName.substring(dotIndex).toLowerCase();
+    }
+
+    private boolean isImageFile(MultipartFile file, String extension) {
+        String contentType = file.getContentType();
+        if (contentType != null && contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            return true;
+        }
+        return isKnownImageExtension(extension);
+    }
+
+    private boolean isKnownImageExtension(String extension) {
+        if (extension == null || extension.isBlank()) {
+            return false;
+        }
+        return switch (extension) {
+            case ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".avif", ".svg" -> true;
+            default -> false;
+        };
+    }
+
+    private String buildImageUrl(String fileName) {
+        String baseUrl = publicBaseUrl == null ? "" : publicBaseUrl.trim();
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl + "/uploads/product-images/" + fileName;
     }
 
     private void deletePhysicalFileIfExists(String imageUrl) {

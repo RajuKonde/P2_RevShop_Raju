@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const topProductsTable = document.getElementById("topProductsTable");
     const recentAlerts = document.getElementById("recentAlerts");
 
+    function prettyStatus(status) {
+        if (!status) return "-";
+        return String(status).replace(/_/g, " ");
+    }
+
     function renderOverview(overview, unreadCount) {
         const tiles = [
             ["Total Products", overview.totalProducts],
@@ -61,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 <small class="market-muted">${app.formatDateTime(item.orderedAt)}</small>
                             </td>
                             <td>${app.escapeHtml(item.buyerEmail)}</td>
-                            <td>${app.escapeHtml(item.orderStatus)}</td>
+                            <td>${app.escapeHtml(prettyStatus(item.orderStatus))}</td>
                             <td class="text-end">${app.formatCurrency(item.orderAmountForSeller)}</td>
                         </tr>
                     `).join("")}

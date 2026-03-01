@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse createCategory(String sellerEmail, CategoryCreateRequest request) {
         validateSeller(sellerEmail);
         String normalizedName = normalizeName(request.getName());
+        String normalizedDescription = normalizeDescription(request.getDescription());
+        String slug = buildSlug(normalizedName);
 
         Category parent = null;
         if (request.getParentId() != null) {
@@ -47,13 +50,18 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category existing = categoryDAO.findAnyByName(normalizedName).orElse(null);
+        Category existingBySlug = categoryDAO.findBySlug(slug).orElse(null);
+        if (existingBySlug != null && (existing == null || !existingBySlug.getId().equals(existing.getId()))) {
+            throw new ConflictException("Category name already exists");
+        }
         if (existing != null) {
             if (Boolean.TRUE.equals(existing.getActive()) && Boolean.FALSE.equals(existing.getIsDeleted())) {
                 if (parent != null && parent.getId().equals(existing.getId())) {
                     throw new BadRequestException("Category cannot be its own parent");
                 }
                 // Idempotent create: update same-name category instead of failing with conflict.
-                existing.setDescription(request.getDescription());
+                existing.setSlug(slug);
+                existing.setDescription(normalizedDescription);
                 existing.setParent(parent);
                 return mapToResponse(categoryDAO.save(existing));
             }
@@ -61,7 +69,8 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new BadRequestException("Category cannot be its own parent");
             }
             existing.setName(normalizedName);
-            existing.setDescription(request.getDescription());
+            existing.setSlug(slug);
+            existing.setDescription(normalizedDescription);
             existing.setParent(parent);
             existing.setActive(true);
             existing.setIsDeleted(false);
@@ -70,7 +79,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = Category.builder()
                 .name(normalizedName)
-                .description(request.getDescription())
+                .slug(slug)
+                .description(normalizedDescription)
                 .parent(parent)
                 .active(true)
                 .build();
@@ -83,12 +93,18 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse updateCategory(Long categoryId, String sellerEmail, CategoryUpdateRequest request) {
         validateSeller(sellerEmail);
         String normalizedName = normalizeName(request.getName());
+        String normalizedDescription = normalizeDescription(request.getDescription());
+        String slug = buildSlug(normalizedName);
 
         Category category = categoryDAO.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         Category duplicate = categoryDAO.findAnyByName(normalizedName).orElse(null);
         if (duplicate != null && !duplicate.getId().equals(category.getId())) {
+            throw new ConflictException("Category name already exists");
+        }
+        Category duplicateBySlug = categoryDAO.findBySlug(slug).orElse(null);
+        if (duplicateBySlug != null && !duplicateBySlug.getId().equals(category.getId())) {
             throw new ConflictException("Category name already exists");
         }
 
@@ -103,7 +119,8 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         category.setName(normalizedName);
-        category.setDescription(request.getDescription());
+        category.setSlug(slug);
+        category.setDescription(normalizedDescription);
         category.setParent(parent);
 
         return mapToResponse(categoryDAO.save(category));
@@ -243,5 +260,31 @@ public class CategoryServiceImpl implements CategoryService {
             throw new BadRequestException("Category name is required");
         }
         return normalized;
+    }
+
+    private String normalizeDescription(String description) {
+        if (description == null) {
+            return null;
+        }
+        String normalized = description.trim().replaceAll("\\s+", " ");
+        return normalized.isBlank() ? null : normalized;
+    }
+
+    private String buildSlug(String normalizedName) {
+        String slug = normalizedName.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
+
+        if (slug.isBlank()) {
+            slug = "category-" + Math.abs(normalizedName.hashCode());
+        }
+
+        if (slug.length() > 120) {
+            slug = slug.substring(0, 120).replaceAll("-+$", "");
+            if (slug.isBlank()) {
+                slug = "category-" + Math.abs(normalizedName.hashCode());
+            }
+        }
+        return slug;
     }
 }

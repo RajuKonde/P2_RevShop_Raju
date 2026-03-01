@@ -14,4 +14,20 @@ public interface OrderService {
     OrderResponse getBuyerOrderById(String buyerEmail, Long orderId);
 
     List<OrderResponse> getSellerOrders(String sellerEmail);
+
+    OrderResponse cancelBuyerOrder(String buyerEmail, Long orderId, String reason);
+
+    OrderResponse requestReturn(String buyerEmail, Long orderId, String reason);
+
+    OrderResponse requestExchange(String buyerEmail, Long orderId, String reason, Long exchangeProductId);
+
+    OrderResponse markOrderShippedBySeller(String sellerEmail, Long orderId);
+
+    OrderResponse markOrderDeliveredBySeller(String sellerEmail, Long orderId);
+
+    OrderResponse confirmOrderDeliveredByBuyer(String buyerEmail, Long orderId);
+
+    OrderResponse completeReturnBySeller(String sellerEmail, Long orderId);
+
+    OrderResponse completeExchangeBySeller(String sellerEmail, Long orderId);
 }

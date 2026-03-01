@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkoutForm = document.getElementById("checkoutForm");
     const shippingAddressInput = document.getElementById("shippingAddressInput");
     const billingAddressInput = document.getElementById("billingAddressInput");
-    const paymentMethodSelect = document.getElementById("paymentMethodSelect");
+    const paymentMethodOptions = document.querySelectorAll("input[name=\"paymentMethodOption\"]");
+    const paymentMethodCards = document.querySelectorAll(".payment-method-card");
 
     let cartState = null;
 
@@ -105,10 +106,15 @@ document.addEventListener("DOMContentLoaded", () => {
     async function placeOrder() {
         const shippingAddress = shippingAddressInput.value.trim();
         const billingAddress = billingAddressInput.value.trim();
-        const paymentMethod = paymentMethodSelect.value;
+        const selectedMethod = document.querySelector("input[name=\"paymentMethodOption\"]:checked");
+        const paymentMethod = selectedMethod ? selectedMethod.value : null;
 
         if (!shippingAddress || !billingAddress) {
             app.showToast("Shipping and billing addresses are required", "error");
+            return;
+        }
+        if (!paymentMethod) {
+            app.showToast("Please select a payment method", "error");
             return;
         }
 
@@ -166,6 +172,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     clearCartBtn.addEventListener("click", clearCart);
+    paymentMethodOptions.forEach((option) => {
+        option.addEventListener("change", () => {
+            paymentMethodCards.forEach((card) => {
+                const input = card.querySelector("input[name=\"paymentMethodOption\"]");
+                card.classList.toggle("active", Boolean(input && input.checked));
+            });
+        });
+    });
     checkoutForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         await placeOrder();

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.revshop.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -119,13 +120,18 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Search results fetched", response));
     }
 
-    @PostMapping("/{productId}/images")
+    @PostMapping(value = "/{productId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<List<ProductImageResponse>>> uploadImages(
             @PathVariable Long productId,
-            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "file", required = false) MultipartFile file,
             Authentication auth
     ) {
-        List<ProductImageResponse> response = productService.uploadProductImages(productId, auth.getName(), files);
+        List<MultipartFile> uploadFiles = files;
+        if ((uploadFiles == null || uploadFiles.isEmpty()) && file != null) {
+            uploadFiles = List.of(file);
+        }
+        List<ProductImageResponse> response = productService.uploadProductImages(productId, auth.getName(), uploadFiles);
         return ResponseEntity.ok(ApiResponse.success("Product images uploaded successfully", response));
     }
 

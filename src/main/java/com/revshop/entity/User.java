@@ -31,6 +31,9 @@ public class User extends BaseAuditEntity {
     @Builder.Default
     private Boolean active = true;
 
+    @Column(name = "profile_image_url", length = 1000)
+    private String profileImageUrl;
+
     // Buyer profile mapping
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private BuyerProfile buyerProfile;

@@ -9,13 +9,17 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -48,5 +52,14 @@ public class ProfileController {
     ) {
         ProfileResponse response = profileService.updateSellerProfile(auth.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("Seller profile updated", response));
+    }
+
+    @PostMapping(value = "/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ProfileResponse>> uploadProfilePhoto(
+            @RequestParam("file") MultipartFile file,
+            Authentication auth
+    ) {
+        ProfileResponse response = profileService.uploadProfilePhoto(auth.getName(), file);
+        return ResponseEntity.ok(ApiResponse.success("Profile photo updated", response));
     }
 }

@@ -12,6 +12,7 @@ public class ProfileResponse {
     private String email;
     private Role role;
     private Boolean active;
+    private String profileImageUrl;
 
     private String firstName;
     private String lastName;

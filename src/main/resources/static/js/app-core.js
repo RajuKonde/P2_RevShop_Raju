@@ -4,6 +4,8 @@ window.RevShopApp = (() => {
     const API_BASE = "/api";
     const TOKEN_KEY = "revshop_token";
     const ROLE_KEY = "revshop_role";
+    const THEME_KEY = "revshop_theme";
+    const DEFAULT_PROFILE_PHOTO = "/images/profile/avatar-placeholder.svg";
 
     const currencyFormatter = new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -11,22 +13,85 @@ window.RevShopApp = (() => {
         maximumFractionDigits: 2
     });
 
+    function safeStorageGet(key) {
+        try {
+            return localStorage.getItem(key);
+        } catch (err) {
+            return null;
+        }
+    }
+
+    function safeStorageSet(key, value) {
+        try {
+            localStorage.setItem(key, value);
+        } catch (err) {
+            // Ignore storage failures in private/restricted modes.
+        }
+    }
+
+    function safeStorageRemove(key) {
+        try {
+            localStorage.removeItem(key);
+        } catch (err) {
+            // Ignore storage failures in private/restricted modes.
+        }
+    }
+
     function getToken() {
-        return localStorage.getItem(TOKEN_KEY);
+        return safeStorageGet(TOKEN_KEY);
     }
 
     function getRole() {
-        return localStorage.getItem(ROLE_KEY);
+        return safeStorageGet(ROLE_KEY);
     }
 
     function setSession(token, role) {
-        localStorage.setItem(TOKEN_KEY, token);
-        localStorage.setItem(ROLE_KEY, String(role || "").toUpperCase());
+        safeStorageSet(TOKEN_KEY, token);
+        safeStorageSet(ROLE_KEY, String(role || "").toUpperCase());
     }
 
     function clearSession() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(ROLE_KEY);
+        safeStorageRemove(TOKEN_KEY);
+        safeStorageRemove(ROLE_KEY);
+    }
+
+    function getStoredTheme() {
+        const theme = safeStorageGet(THEME_KEY);
+        return theme === "dark" || theme === "light" ? theme : null;
+    }
+
+    function getPreferredTheme() {
+        const stored = getStoredTheme();
+        if (stored) {
+            return stored;
+        }
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            return "dark";
+        }
+        return "light";
+    }
+
+    function applyTheme(theme) {
+        const normalized = theme === "dark" ? "dark" : "light";
+        const root = document.documentElement;
+        if (root) {
+            root.setAttribute("data-theme", normalized);
+        }
+        safeStorageSet(THEME_KEY, normalized);
+
+        const themeToggleBtn = document.getElementById("themeToggleBtn");
+        if (themeToggleBtn) {
+            const nextMode = normalized === "dark" ? "Light" : "Dark";
+            themeToggleBtn.textContent = `${nextMode} Mode`;
+            themeToggleBtn.setAttribute("aria-label", `Switch to ${nextMode.toLowerCase()} mode`);
+            themeToggleBtn.setAttribute("title", `Switch to ${nextMode.toLowerCase()} mode`);
+        }
+        return normalized;
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+        return applyTheme(current === "dark" ? "light" : "dark");
     }
 
     function decodeJwtPayload(token) {
@@ -144,6 +209,45 @@ window.RevShopApp = (() => {
         return role === "SELLER" ? "Seller" : role === "BUYER" ? "Buyer" : role;
     }
 
+    function getFallbackDisplayName(role, email) {
+        if (email) {
+            const atIndex = email.indexOf("@");
+            const localPart = (atIndex > 0 ? email.slice(0, atIndex) : email).trim();
+            if (localPart) {
+                return localPart;
+            }
+        }
+        return role ? `${getRoleLabel(role)} User` : "Guest";
+    }
+
+    function getDisplayNameFromProfile(profile, role, email) {
+        if (profile) {
+            const userName = String(profile.username || profile.userName || "").trim();
+            if (userName) {
+                return userName;
+            }
+
+            const fullName = [profile.firstName, profile.lastName]
+                .filter(Boolean)
+                .join(" ")
+                .trim();
+            if (fullName) {
+                return fullName;
+            }
+        }
+        return getFallbackDisplayName(role, email);
+    }
+
+    function resolveProfileImageUrl(value) {
+        if (!value) return DEFAULT_PROFILE_PHOTO;
+        const marker = "/uploads/";
+        const markerIndex = value.indexOf(marker);
+        if (markerIndex >= 0) {
+            return value.substring(markerIndex);
+        }
+        return value;
+    }
+
     function getRoleLinks(role) {
         if (role === "BUYER") {
             return [
@@ -158,6 +262,7 @@ window.RevShopApp = (() => {
         if (role === "SELLER") {
             return [
                 { key: "seller-dashboard", label: "Seller Dashboard", href: "/seller/dashboard" },
+                { key: "seller-orders", label: "Orders", href: "/seller/orders" },
                 { key: "products", label: "Products", href: "/seller/products" },
                 { key: "categories", label: "Categories", href: "/seller/categories" },
                 { key: "seller-notifications", label: "Notifications", href: "/seller/notifications" },
@@ -167,12 +272,33 @@ window.RevShopApp = (() => {
         return [];
     }
 
+    async function hydrateShellProfile(role, email) {
+        const nameNode = document.getElementById("shellUserName");
+        const avatarNode = document.getElementById("shellUserAvatar");
+        if (!nameNode || !avatarNode) return;
+
+        avatarNode.onerror = () => {
+            avatarNode.src = DEFAULT_PROFILE_PHOTO;
+            avatarNode.onerror = null;
+        };
+
+        try {
+            const profile = await api("/profile/me");
+            nameNode.textContent = getDisplayNameFromProfile(profile, role, email);
+            avatarNode.src = resolveProfileImageUrl(profile.profileImageUrl);
+        } catch (err) {
+            nameNode.textContent = getFallbackDisplayName(role, email);
+            avatarNode.src = DEFAULT_PROFILE_PHOTO;
+        }
+    }
+
     function mountShell(options = {}) {
         const active = options.active || "home";
         const title = options.title || "RevShop";
-        const subtitle = options.subtitle || "Enterprise marketplace platform";
+        const subtitle = options.subtitle || "Premium fashion, electronics, and lifestyle marketplace.";
         const role = getRole();
         const email = getCurrentUserEmail();
+        const fallbackDisplayName = getFallbackDisplayName(role, email);
         const host = document.getElementById("app-shell");
         if (!host) return;
 
@@ -185,15 +311,23 @@ window.RevShopApp = (() => {
                 </li>
             `).join("");
 
+        const themeButton = `
+            <button class="btn btn-sm btn-light market-btn theme-toggle-btn" id="themeToggleBtn" type="button">
+                Dark Mode
+            </button>
+        `;
+
         const authButtons = role
             ? `
                 <div class="d-flex align-items-center gap-2">
+                    ${themeButton}
                     <span class="badge text-bg-light">${getRoleLabel(role)}</span>
                     <button class="btn btn-sm btn-light market-btn" id="logoutBtn">Logout</button>
                 </div>
             `
             : `
                 <div class="d-flex align-items-center gap-2">
+                    ${themeButton}
                     <a class="btn btn-sm btn-light market-btn" href="/login">Login</a>
                     <a class="btn btn-sm btn-accent market-btn" href="/register">Register</a>
                 </div>
@@ -207,7 +341,7 @@ window.RevShopApp = (() => {
                             <span class="logo-chip font-display">RS</span>
                             <div>
                                 <div class="font-display fs-5 fw-bold lh-1">RevShop</div>
-                                <small class="opacity-75">Marketplace Engine</small>
+                                <small class="opacity-75">Premium Marketplace</small>
                             </div>
                         </a>
                         ${authButtons}
@@ -219,7 +353,19 @@ window.RevShopApp = (() => {
                             </li>
                             ${roleLinks}
                         </ul>
-                        <small class="opacity-75">${email ? escapeHtml(email) : "Guest mode"}</small>
+                        ${role
+                            ? `
+                                <div class="shell-user-pill">
+                                    <img
+                                        id="shellUserAvatar"
+                                        class="shell-user-avatar"
+                                        src="${DEFAULT_PROFILE_PHOTO}"
+                                        alt="Profile photo">
+                                    <span class="shell-user-name" id="shellUserName">${escapeHtml(fallbackDisplayName)}</span>
+                                </div>
+                            `
+                            : `<small class="opacity-75">Guest mode</small>`
+                        }
                     </div>
                 </div>
             </header>
@@ -230,6 +376,15 @@ window.RevShopApp = (() => {
                 </div>
             </section>
         `;
+        ensureSiteFooter();
+        applyTheme(getPreferredTheme());
+
+        const themeToggleBtn = document.getElementById("themeToggleBtn");
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener("click", () => {
+                toggleTheme();
+            });
+        }
 
         const logoutBtn = document.getElementById("logoutBtn");
         if (logoutBtn) {
@@ -240,6 +395,10 @@ window.RevShopApp = (() => {
                     window.location.href = "/login";
                 }, 350);
             });
+        }
+
+        if (role) {
+            hydrateShellProfile(role, email);
         }
     }
 
@@ -280,6 +439,43 @@ window.RevShopApp = (() => {
         return stack;
     }
 
+    function ensureSiteFooter() {
+        let footer = document.getElementById("revshopGlobalFooter");
+        if (footer) {
+            return footer;
+        }
+
+        const year = new Date().getFullYear();
+        footer = document.createElement("footer");
+        footer.id = "revshopGlobalFooter";
+        footer.className = "revshop-site-footer";
+        footer.innerHTML = `
+            <div class="container">
+                <div class="site-footer-grid">
+                    <section>
+                        <h6 class="font-display mb-1">RevShop</h6>
+                        <p class="mb-0 market-muted">Premium quality clothes, electronics, and daily essentials in one trusted marketplace.</p>
+                    </section>
+                    <section>
+                        <h6 class="font-display mb-1">Featured Categories</h6>
+                        <p class="mb-0 market-muted">Luxury fashion, smart electronics, home upgrades, beauty care, and lifestyle picks.</p>
+                    </section>
+                    <section>
+                        <h6 class="font-display mb-1">Why RevShop</h6>
+                        <p class="mb-0 market-muted">Secure checkout, verified sellers, real-time order updates, and reliable support.</p>
+                    </section>
+                </div>
+                <div class="site-footer-meta">
+                    <span>Website developed by Rajukonde</span>
+                    <span>Company location: Hyderabad, Telangana, India</span>
+                    <span>&copy; ${year} RevShop</span>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(footer);
+        return footer;
+    }
+
     function showToast(message, type = "info", timeout = 3400) {
         const stack = ensureToastStack();
         const toast = document.createElement("div");
@@ -297,7 +493,10 @@ window.RevShopApp = (() => {
         return params.get(name);
     }
 
+    applyTheme(getPreferredTheme());
+
     return {
+        applyTheme,
         api,
         apiRaw,
         clearSession,
@@ -307,12 +506,14 @@ window.RevShopApp = (() => {
         formatCurrency,
         formatDateTime,
         getCurrentUserEmail,
+        getPreferredTheme,
         getRole,
         getToken,
         mountShell,
         readQueryParam,
         redirectAfterLogin,
         setSession,
-        showToast
+        showToast,
+        toggleTheme
     };
 })();

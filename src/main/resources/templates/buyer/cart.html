@@ -48,13 +48,17 @@
         </section>
 
         <aside class="col-lg-4">
-            <div class="market-card p-3 p-md-4 mb-3">
+            <div class="market-card p-3 p-md-4 mb-3 order-summary-card">
                 <h5 class="card-title">Order Summary</h5>
                 <p class="mb-1">Items: <strong id="summaryItems">0</strong></p>
-                <p class="mb-3">Total: <strong id="summaryTotal">₹0.00</strong></p>
+                <p class="mb-3">Total: <strong id="summaryTotal">&#8377;0.00</strong></p>
+                <div class="summary-badge">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Secure checkout enabled
+                </div>
             </div>
 
-            <div class="market-card p-3 p-md-4">
+            <div class="market-card p-3 p-md-4 checkout-card">
                 <h5 class="card-title">Checkout</h5>
                 <form id="checkoutForm" class="vstack gap-3">
                     <div>
@@ -66,12 +70,52 @@
                         <textarea id="billingAddressInput" class="form-control market-textarea" rows="2" required></textarea>
                     </div>
                     <div>
-                        <label class="form-label">Payment Method</label>
-                        <select id="paymentMethodSelect" class="form-select market-select" required>
-                            <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
-                            <option value="CREDIT_CARD">Credit Card</option>
-                            <option value="DEBIT_CARD">Debit Card</option>
-                        </select>
+                        <label class="form-label mb-2">Payment Method</label>
+
+                        <div class="payment-brand-strip mb-2">
+                            <img src="/images/payment/visa.svg" alt="Visa" class="payment-brand-logo">
+                            <img src="/images/payment/mastercard.svg" alt="Mastercard" class="payment-brand-logo">
+                            <img src="/images/payment/rupay.svg" alt="RuPay" class="payment-brand-logo">
+                        </div>
+
+                        <div class="payment-method-grid">
+                            <label class="payment-method-card active" for="payCreditCard">
+                                <input id="payCreditCard"
+                                       type="radio"
+                                       name="paymentMethodOption"
+                                       value="CREDIT_CARD"
+                                       checked>
+                                <span class="payment-method-icon"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                <span class="payment-method-text">
+                                    <strong>Credit Card</strong>
+                                    <small>Visa / Mastercard / RuPay</small>
+                                </span>
+                            </label>
+
+                            <label class="payment-method-card" for="payDebitCard">
+                                <input id="payDebitCard"
+                                       type="radio"
+                                       name="paymentMethodOption"
+                                       value="DEBIT_CARD">
+                                <span class="payment-method-icon"><i class="bi bi-credit-card-fill"></i></span>
+                                <span class="payment-method-text">
+                                    <strong>Debit Card</strong>
+                                    <small>Direct bank account payment</small>
+                                </span>
+                            </label>
+
+                            <label class="payment-method-card" for="payCod">
+                                <input id="payCod"
+                                       type="radio"
+                                       name="paymentMethodOption"
+                                       value="CASH_ON_DELIVERY">
+                                <span class="payment-method-icon"><i class="bi bi-wallet2"></i></span>
+                                <span class="payment-method-text">
+                                    <strong>Cash on Delivery</strong>
+                                    <small>Pay when your order arrives</small>
+                                </span>
+                            </label>
+                        </div>
                     </div>
                     <button class="btn btn-brand market-btn" type="submit">
                         Place Order

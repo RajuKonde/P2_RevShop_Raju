@@ -44,7 +44,7 @@ public class Review extends BaseAuditEntity {
     @Column(length = 150)
     private String title;
 
-    @Column(length = 2000)
+    @Column(name = "review_comment", length = 2000)
     private String comment;
 
     @Column(nullable = false)

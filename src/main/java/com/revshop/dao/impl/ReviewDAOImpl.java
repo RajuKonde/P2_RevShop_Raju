@@ -126,10 +126,9 @@ public class ReviewDAOImpl implements ReviewDAO {
                 .setParameter("buyerEmail", buyerEmail)
                 .setParameter("productId", productId)
                 .setParameter("allowedStatuses", List.of(
-                        OrderStatus.PLACED,
-                        OrderStatus.CONFIRMED,
-                        OrderStatus.SHIPPED,
-                        OrderStatus.DELIVERED
+                        OrderStatus.DELIVERED,
+                        OrderStatus.RETURNED,
+                        OrderStatus.EXCHANGED
                 ))
                 .getSingleResult();
         return count != null && count > 0;

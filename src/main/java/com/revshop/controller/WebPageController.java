@@ -66,6 +66,11 @@ public class WebPageController {
         return "seller/dashboard";
     }
 
+    @GetMapping("/seller/orders")
+    public String sellerOrdersPage() {
+        return "seller/orders";
+    }
+
     @GetMapping("/seller/products")
     public String sellerProductsPage() {
         return "seller/products";
