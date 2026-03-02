@@ -1,109 +1,128 @@
-# P2_RevShop_Raju
-Full-stack e-commerce web application using Spring Boot, Thymeleaf, Oracle DB with buyer and seller modules.
-# 🛒 RevShop - Full Stack E-Commerce Application
+# RevShop - Monolithic E-Commerce Web Application
 
-RevShop is a full-stack monolithic e-commerce web application built using **Spring Boot**, **Thymeleaf**, and **Oracle Database**.  
-The platform supports both buyers and sellers with real-world e-commerce functionality including product management, cart operations, order processing, and review systems.
-
----
-
-## Project Objective
-
-To design and implement a scalable e-commerce platform using enterprise-level layered architecture, normalized relational database design, and modular Spring Boot development.
-
----
-
-## Features
-
-### Buyer Features
-- User registration & authentication
-- Browse and search products
-- Sorting by price, brand, discount
-- Add to cart & checkout
-- Order history tracking
-- Reviews and ratings
-- Wishlist management
-- Profile management
-
-### Seller Features
-- Product CRUD operations
-- Inventory management
-- Order tracking
-- Discount and pricing control
-- Seller rating system
-
----
+RevShop is a full-stack monolithic e-commerce application built with Spring Boot, Thymeleaf, and Oracle Database.
+It supports buyer and seller workflows including authentication, catalog management, cart, checkout, orders, reviews, wishlist, notifications, and profile management.
 
 ## Tech Stack
 
-### Backend
-- Java 17
-- Spring Boot
-- Spring Data JPA
-- Hibernate
-
-### Frontend
-- Thymeleaf
-- Bootstrap
-
-### Database
+- Java 21
+- Spring Boot 4
+- Spring Security (JWT)
+- Spring Data JPA / Hibernate
+- Thymeleaf + Bootstrap 5
 - Oracle Database
-
-### Tools
 - Maven
-- Log4j
-- JUnit
-- Git & GitHub
-
----
-
-## Database Design
-
-The system uses a fully normalized relational schema consisting of:
-
-- USER
-- USER_PROFILE
-- SELLER
-- CATEGORY
-- PRODUCT
-- CART
-- CART_ITEM
-- ORDERS
-- ORDER_ITEM
-- REVIEW
-- WISHLIST
-- NOTIFICATION
-- PASSWORD_RESET
-
-Designed using enterprise layered architecture and Oracle relational modeling.
-
----
-
-## ER Diagram
-
-![ER Diagram](docs/RevShop_ER_Diagram.png)
-
----
+- JUnit 5 / Spring Boot Test
 
 ## Architecture
 
-The application follows a layered architecture pattern:
+Layered architecture:
 
-Controller → Service → Repository → Database
+- Controller layer: API and MVC page endpoints
+- Service layer: business rules, validations, authorization checks
+- DAO layer: persistence using JPA EntityManager
+- Database layer: Oracle relational schema
 
-This ensures separation of concerns, scalability, and maintainability.
+## Features
 
----
+### Authentication and Security
 
-##  Project Status
+- Buyer and seller registration
+- Login with JWT token
+- BCrypt password hashing
+- Role-aware access for buyer/seller pages
+- Global exception handling with standard API response envelope
 
- Database design completed  
- ER diagram completed  
- Backend development in progress  
+### Buyer
 
----
+- Browse and search products
+- Filter and pagination
+- Cart management
+- Checkout and order history
+- Return/exchange/cancel order flows
+- Wishlist
+- Notifications
+- Profile update and profile image upload
 
-## 👨‍💻 Author
+### Seller
 
-**Raju Konde**  
-Java Full Stack Developer
+- Seller dashboard KPIs
+- Product CRUD and product image upload
+- Category CRUD and category tree
+- Seller order processing lifecycle
+- Notifications
+- Profile update and profile image upload
+
+## Database and ERD
+
+- Updated ER diagram:
+
+![RevShop ER Diagram](docs/RevShop_ER_Diagram.png)
+
+- ER diagram file path: `docs/RevShop_ER_Diagram.png`
+- JPA entities are in `src/main/java/com/revshop/entity`
+
+## Prerequisites
+
+- JDK 21+
+- Maven 3.9+ (or use included wrapper)
+- Oracle Database (example used in this project: XE / PDB)
+
+## Configuration
+
+Edit `src/main/resources/application.properties` or set environment variables:
+
+- `spring.datasource.url`
+- `spring.datasource.username`
+- `spring.datasource.password`
+- `JWT_SECRET` (at least 32 bytes; plain text or base64)
+- `JWT_EXPIRATION_MS` (optional, default `86400000`)
+- `APP_ADMIN_API_KEY`
+
+Example (PowerShell):
+
+```powershell
+$env:JWT_SECRET="RevShopJwtSecretChangeThisToAtLeast32Chars"
+$env:APP_ADMIN_API_KEY="your-admin-key"
+```
+
+## Run the Application
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Application URL: `http://localhost:8080`
+
+## API Documentation
+
+Swagger UI:
+
+- `http://localhost:8080/swagger-ui.html`
+
+## Run Tests
+
+```powershell
+.\mvnw.cmd test
+```
+
+## Project Structure
+
+```text
+src/main/java/com/revshop
+  controller/
+  service/
+  service/impl/
+  dao/
+  dao/impl/
+  entity/
+  dto/
+  security/
+  exception/
+  config/
+
+src/main/resources
+  templates/
+  static/
+  application.properties
+```

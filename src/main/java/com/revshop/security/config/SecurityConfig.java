@@ -38,9 +38,9 @@ public class SecurityConfig {
                         ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
 
-                //  API Authorization Rules
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        //  PUBLIC APIs
+                        // Public routes
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/error",
@@ -64,7 +64,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        //  EVERYTHING ELSE NEEDS JWT
+                        // Everything else needs JWT
                         .anyRequest().authenticated()
                 )
 
