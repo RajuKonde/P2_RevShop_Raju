@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "wishlist",
-        title: "Wishlist",
-        subtitle: "Save products and move them to cart when ready."
+        title: "Saved for Later",
+        subtitle: "Keep favorite products here and move them to your cart anytime."
     });
 
     const wishlistGrid = document.getElementById("wishlistGrid");

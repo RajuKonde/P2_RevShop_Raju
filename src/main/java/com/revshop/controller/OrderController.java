@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.order.CancelOrderRequest;
 import com.revshop.dto.order.ExchangeOrderRequest;
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Orders", description = "Order placement and order history APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class OrderController {
 
     private final OrderService orderService;

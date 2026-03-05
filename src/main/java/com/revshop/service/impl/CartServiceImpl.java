@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.CartDAO;
 import com.revshop.dao.CartItemDAO;
 import com.revshop.dao.ProductDAO;
@@ -27,6 +28,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class CartServiceImpl implements CartService {
 
     private final CartDAO cartDAO;

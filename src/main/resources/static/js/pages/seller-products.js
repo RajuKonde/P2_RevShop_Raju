@@ -7,8 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "products",
-        title: "Product and Inventory Manager",
-        subtitle: "Create catalog entries, adjust stock rules, and maintain product media."
+        title: "Products and Stock",
+        subtitle: "Add new items, update prices, and keep inventory easy to manage."
     });
 
     const productForm = document.getElementById("productForm");

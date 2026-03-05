@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.profile.ProfileResponse;
 import com.revshop.dto.profile.UpdateBuyerProfileRequest;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "Buyer and seller profile APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class ProfileController {
 
     private final ProfileService profileService;

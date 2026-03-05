@@ -15,11 +15,11 @@
 <main class="auth-shell">
     <div class="auth-card">
         <section class="auth-panel">
-            <a href="/" class="text-decoration-none text-primary fw-semibold">
+            <a href="/" class="auth-back-link text-decoration-none text-primary fw-semibold">
                 <i class="bi bi-arrow-left"></i> Back to marketplace
             </a>
-            <h2 class="font-display mt-3 mb-1">Welcome Back</h2>
-            <p class="market-muted mb-4">Login to continue your buyer or seller journey.</p>
+            <h2 class="font-display auth-title mt-3 mb-1">Welcome Back</h2>
+            <p class="market-muted auth-intro mb-4">Sign in to continue shopping, manage orders, or run your store with ease.</p>
 
             <form id="loginForm" class="vstack gap-3">
                 <div>
@@ -35,6 +35,10 @@
                 </button>
             </form>
 
+            <p class="auth-trust-note mt-3 mb-0">
+                <i class="bi bi-shield-check"></i> One simple sign-in for both buyers and sellers.
+            </p>
+
             <div class="d-flex justify-content-between mt-3">
                 <a href="/register" class="text-decoration-none">Create account</a>
                 <a href="/forgot-password" class="text-decoration-none">Forgot password?</a>
@@ -42,13 +46,39 @@
         </section>
 
         <aside class="auth-visual">
-            <h3 class="font-display mb-3">RevShop Enterprise Commerce</h3>
-            <p class="mb-1">Operate like a production marketplace with secure API workflows.</p>
-            <ul>
-                <li>JWT-based buyer and seller sessions</li>
-                <li>Real-time order, payment, and notification APIs</li>
-                <li>Inventory intelligence with low-stock tracking</li>
-            </ul>
+            <span class="auth-kicker">Everything in one place</span>
+            <h3 class="font-display auth-hero-title mb-3">A smoother way to shop, sell, and stay updated</h3>
+            <p class="auth-hero-copy mb-4">RevShop brings your storefront, orders, payments, and notifications together so every visit feels clear and effortless.</p>
+
+            <div class="auth-feature-list">
+                <article class="auth-feature-item">
+                    <span class="auth-feature-icon"><i class="bi bi-person-check"></i></span>
+                    <div>
+                        <h6 class="mb-1">Easy account access</h6>
+                        <p class="mb-0">Buyers and sellers can sign in quickly and jump straight into what matters.</p>
+                    </div>
+                </article>
+                <article class="auth-feature-item">
+                    <span class="auth-feature-icon"><i class="bi bi-bag-check"></i></span>
+                    <div>
+                        <h6 class="mb-1">Live order updates</h6>
+                        <p class="mb-0">Keep track of purchases, payments, and delivery progress as they happen.</p>
+                    </div>
+                </article>
+                <article class="auth-feature-item">
+                    <span class="auth-feature-icon"><i class="bi bi-bell"></i></span>
+                    <div>
+                        <h6 class="mb-1">Helpful stock alerts</h6>
+                        <p class="mb-0">Stay ready with timely reminders before popular products run low.</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="auth-stat-strip">
+                <span><i class="bi bi-heart"></i> Smooth shopping</span>
+                <span><i class="bi bi-shop"></i> Seller ready</span>
+                <span><i class="bi bi-lightning-charge"></i> Fast updates</span>
+            </div>
         </aside>
     </div>
 </main>

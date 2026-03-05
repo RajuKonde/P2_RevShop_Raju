@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.LoginRequestDTO;
 import com.revshop.dto.LoginResponseDTO;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "Authentication and registration APIs")
+@Log4j2
 public class AuthController {
 
     private final UserService userService;

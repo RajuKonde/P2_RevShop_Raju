@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "categories",
-        title: "Category Management",
-        subtitle: "Design hierarchical catalog taxonomy for your marketplace."
+        title: "Catalog Categories",
+        subtitle: "Keep your product catalog organized with simple category groups."
     });
 
     const categoryForm = document.getElementById("categoryForm");

@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     app.mountShell({
         active: "seller-dashboard",
-        title: "Seller Control Tower",
-        subtitle: "Revenue, orders, and inventory intelligence in one dashboard."
+        title: "Store Overview",
+        subtitle: "See sales, orders, product activity, and alerts at a glance."
     });
 
     const overviewKpis = document.getElementById("overviewKpis");
@@ -122,17 +122,55 @@ document.addEventListener("DOMContentLoaded", async () => {
         `).join("");
     }
 
-    try {
-        const [data, unread, alerts] = await Promise.all([
-            app.api("/seller/dashboard?recentLimit=8&topLimit=8&lowStockThreshold=5"),
-            app.api("/notifications/my/unread-count"),
-            app.api("/notifications/my?unreadOnly=true")
-        ]);
-        renderOverview(data.overview || {}, unread.unreadCount || 0);
-        renderRecentOrders(data.recentOrders || []);
-        renderTopProducts(data.topProducts || []);
-        renderRecentAlerts(alerts || []);
-    } catch (error) {
-        app.showToast(error.message || "Failed to load seller dashboard", "error");
+    const DASHBOARD_REFRESH_MS = 15000;
+    let refreshInFlight = false;
+    let initialLoadDone = false;
+
+    async function loadDashboard({ silent = false } = {}) {
+        if (refreshInFlight) {
+            return;
+        }
+
+        refreshInFlight = true;
+        const cacheBust = `_=${Date.now()}`;
+
+        try {
+            const [data, unread, alerts] = await Promise.all([
+                app.api(`/seller/dashboard?recentLimit=8&topLimit=8&lowStockThreshold=5&${cacheBust}`),
+                app.api(`/notifications/my/unread-count?${cacheBust}`),
+                app.api(`/notifications/my?unreadOnly=true&${cacheBust}`)
+            ]);
+            renderOverview(data.overview || {}, unread.unreadCount || 0);
+            renderRecentOrders(data.recentOrders || []);
+            renderTopProducts(data.topProducts || []);
+            renderRecentAlerts(alerts || []);
+            initialLoadDone = true;
+        } catch (error) {
+            if (!silent || !initialLoadDone) {
+                app.showToast(error.message || "Failed to load seller dashboard", "error");
+            }
+        } finally {
+            refreshInFlight = false;
+        }
     }
+
+    const refreshDashboardSilently = () => {
+        void loadDashboard({ silent: true });
+    };
+
+    window.setInterval(() => {
+        if (document.visibilityState === "visible") {
+            refreshDashboardSilently();
+        }
+    }, DASHBOARD_REFRESH_MS);
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            refreshDashboardSilently();
+        }
+    });
+
+    window.addEventListener("focus", refreshDashboardSilently);
+
+    await loadDashboard();
 });

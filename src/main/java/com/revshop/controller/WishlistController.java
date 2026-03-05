@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.wishlist.AddWishlistItemRequest;
 import com.revshop.dto.wishlist.WishlistItemResponse;
@@ -26,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Wishlist", description = "Buyer wishlist/favorite product APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class WishlistController {
 
     private final WishlistService wishlistService;

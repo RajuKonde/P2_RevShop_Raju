@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "buyer-profile",
-        title: "Buyer Profile",
-        subtitle: "Keep your personal details updated for seamless checkout."
+        title: "Your Profile",
+        subtitle: "Keep your delivery details and contact info ready for faster checkout."
     });
 
     const emailText = document.getElementById("emailText");

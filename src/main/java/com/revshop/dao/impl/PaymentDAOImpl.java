@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.PaymentDAO;
 import com.revshop.entity.Payment;
 import jakarta.persistence.EntityManager;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Log4j2
 public class PaymentDAOImpl implements PaymentDAO {
 
     @PersistenceContext

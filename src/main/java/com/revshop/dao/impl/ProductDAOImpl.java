@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.ProductDAO;
 import com.revshop.entity.Product;
 import jakarta.persistence.EntityManager;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@Log4j2
 public class ProductDAOImpl implements ProductDAO {
 
     private final EntityManager em;

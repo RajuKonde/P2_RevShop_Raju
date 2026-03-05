@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.PasswordResetTokenDAO;
 import com.revshop.entity.PasswordResetToken;
 import com.revshop.entity.User;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@Log4j2
 public class PasswordResetTokenDAOImpl implements PasswordResetTokenDAO {
 
     @PersistenceContext

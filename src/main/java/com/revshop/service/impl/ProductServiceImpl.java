@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.CategoryDAO;
 import com.revshop.dao.ProductDAO;
 import com.revshop.dao.ProductImageDAO;
@@ -39,6 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class ProductServiceImpl implements ProductService {
 
     private static final int DEFAULT_LOW_STOCK_THRESHOLD = 5;

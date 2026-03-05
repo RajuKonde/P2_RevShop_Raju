@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "seller-orders",
-        title: "Seller Orders",
-        subtitle: "Advance lifecycle states from confirmed to final resolution."
+        title: "Order Management",
+        subtitle: "Track each customer order and move it forward with clear next steps."
     });
 
     const ordersList = document.getElementById("sellerOrdersList");

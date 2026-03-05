@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.CartDAO;
 import com.revshop.entity.Cart;
 import jakarta.persistence.EntityManager;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@Log4j2
 public class CartDAOImpl implements CartDAO {
 
     @PersistenceContext

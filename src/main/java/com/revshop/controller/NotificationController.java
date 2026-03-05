@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.notification.MarkAllReadResponse;
 import com.revshop.dto.notification.NotificationResponse;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Notifications", description = "In-app notification APIs for buyer/seller")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class NotificationController {
 
     private final NotificationService notificationService;

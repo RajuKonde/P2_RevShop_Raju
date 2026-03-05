@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.cart.AddToCartRequest;
 import com.revshop.dto.cart.CartResponse;
 import com.revshop.dto.cart.UpdateCartItemRequest;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Cart", description = "Buyer cart operations")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class CartController {
 
     private final CartService cartService;

@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.ReviewDAO;
 import com.revshop.entity.OrderStatus;
 import com.revshop.entity.Review;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Log4j2
 public class ReviewDAOImpl implements ReviewDAO {
 
     @PersistenceContext

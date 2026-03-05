@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "seller-notifications",
-        title: "Seller Alert Center",
-        subtitle: "Track order, revenue, and low-stock events in real time."
+        title: "Store Updates",
+        subtitle: "Review new orders, stock reminders, and business updates in one list."
     });
 
     const unreadOnlyToggle = document.getElementById("unreadOnlyToggle");

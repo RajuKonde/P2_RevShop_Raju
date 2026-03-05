@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.CategoryDAO;
 import com.revshop.dao.ProductDAO;
 import com.revshop.dao.UserDAO;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDAO categoryDAO;

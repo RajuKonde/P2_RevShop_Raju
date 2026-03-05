@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.UserDAO;
 import com.revshop.dto.profile.ProfileResponse;
 import com.revshop.dto.profile.UpdateBuyerProfileRequest;
@@ -29,6 +30,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class ProfileServiceImpl implements ProfileService {
 
     private static final long MAX_PROFILE_IMAGE_SIZE_BYTES = 5L * 1024 * 1024;

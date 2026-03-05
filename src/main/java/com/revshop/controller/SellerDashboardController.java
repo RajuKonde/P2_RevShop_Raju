@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.seller.SellerDashboardResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Seller Dashboard", description = "Seller KPIs, recent orders, and top products")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class SellerDashboardController {
 
     private final SellerDashboardService sellerDashboardService;

@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.NotificationDAO;
 import com.revshop.dao.UserDAO;
 import com.revshop.dto.notification.NotificationResponse;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationDAO notificationDAO;

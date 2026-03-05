@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.review.CreateReviewRequest;
 import com.revshop.dto.review.ProductRatingSummaryResponse;
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Reviews", description = "Product reviews and rating APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class ReviewController {
 
     private final ReviewService reviewService;

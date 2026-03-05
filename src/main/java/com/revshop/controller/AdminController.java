@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.admin.AdminSummaryResponse;
 import com.revshop.dto.admin.AdminUserResponse;
 import com.revshop.dto.admin.AdminUserStatusUpdateRequest;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Admin", description = "Privileged admin-ready APIs protected by JWT + X-ADMIN-KEY")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class AdminController {
 
     private final AdminService adminService;

@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     app.mountShell({
         active: "buyer-dashboard",
-        title: "Buyer Command Center",
-        subtitle: "Track cart, wishlist, orders, and account alerts in one place."
+        title: "Your Shopping Hub",
+        subtitle: "See your cart, saved items, orders, and updates in one easy view."
     });
 
     const cartCountKpi = document.getElementById("cartCountKpi");

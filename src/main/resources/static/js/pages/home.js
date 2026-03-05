@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const app = window.RevShopApp;
     app.mountShell({
         active: "home",
-        title: "RevShop - Premium Shopping Destination",
-        subtitle: "Explore premium quality clothes, smart electronics, and trusted daily essentials from verified sellers."
+        title: "Shop with Confidence at RevShop",
+        subtitle: "Find quality fashion, electronics, and everyday favorites from trusted sellers."
     });
 
     const state = {
@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 catalogMeta.textContent = "Login to browse products.";
                 emptyCatalog.innerHTML = `
                     <h6 class="mb-2">Please login to continue</h6>
-                    <p class="market-muted mb-3">Your APIs are secured with JWT.</p>
+                    <p class="market-muted mb-3">Sign in to browse products, save favorites, and place orders.</p>
                     <a class="btn btn-brand market-btn" href="/login">Login Now</a>
                 `;
             } else {

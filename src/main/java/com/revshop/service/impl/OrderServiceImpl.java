@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.CartDAO;
 import com.revshop.dao.CartItemDAO;
 import com.revshop.dao.OrderDAO;
@@ -45,6 +46,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class OrderServiceImpl implements OrderService {
 
     private final OrderDAO orderDAO;

@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "seller-profile",
-        title: "Seller Profile",
-        subtitle: "Keep business identity and contact details up to date."
+        title: "Store Profile",
+        subtitle: "Keep your business details polished so buyers can trust your shop."
     });
 
     const emailText = document.getElementById("emailText");

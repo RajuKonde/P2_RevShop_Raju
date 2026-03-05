@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.AdminDAO;
 import com.revshop.dao.UserDAO;
 import com.revshop.dto.admin.AdminSummaryResponse;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class AdminServiceImpl implements AdminService {
 
     private final AdminDAO adminDAO;

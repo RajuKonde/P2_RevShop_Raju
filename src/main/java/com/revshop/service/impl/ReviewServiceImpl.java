@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.ProductDAO;
 import com.revshop.dao.ReviewDAO;
 import com.revshop.dao.UserDAO;
@@ -24,6 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewDAO reviewDAO;

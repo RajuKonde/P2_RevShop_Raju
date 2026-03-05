@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.common.PagedResponse;
 import com.revshop.dto.product.ProductCreateRequest;
@@ -35,6 +36,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Products", description = "Product management and product catalog APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class ProductController {
 
     private final ProductService productService;

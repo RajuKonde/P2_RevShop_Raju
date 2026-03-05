@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "notifications",
-        title: "Notification Center",
-        subtitle: "Stay updated on order, payment, and stock events."
+        title: "Your Updates",
+        subtitle: "Stay on top of purchases, payments, and helpful reminders without the clutter."
     });
 
     const unreadOnlyToggle = document.getElementById("unreadOnlyToggle");

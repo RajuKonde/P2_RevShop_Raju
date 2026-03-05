@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.category.CategoryCreateRequest;
 import com.revshop.dto.category.CategoryResponse;
 import com.revshop.dto.category.CategoryTreeResponse;
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Categories", description = "Category hierarchy and CRUD APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class CategoryController {
 
     private final CategoryService categoryService;

@@ -301,6 +301,21 @@ window.RevShopApp = (() => {
         const fallbackDisplayName = getFallbackDisplayName(role, email);
         const host = document.getElementById("app-shell");
         if (!host) return;
+        const roleContextLabel = role === "SELLER"
+            ? "Seller space"
+            : role === "BUYER"
+                ? "Buyer space"
+                : "Welcome to RevShop";
+        const supportCopy = role === "SELLER"
+            ? "Keep your store organized with cleaner tools, quicker updates, and a layout that is easy to scan."
+            : role === "BUYER"
+                ? "Browse, buy, and track your account in one simple space designed to feel clear and comfortable."
+                : "Discover trusted products, easy shopping, and a cleaner marketplace experience from the first click.";
+        const heroTags = role === "SELLER"
+            ? ["Clear inventory", "Simple order flow", "Helpful alerts"]
+            : role === "BUYER"
+                ? ["Easy browsing", "Smooth checkout", "Quick updates"]
+                : ["Trusted sellers", "Fresh finds", "Easy to start"];
 
         const roleLinks = getRoleLinks(role)
             .map(link => `
@@ -332,6 +347,9 @@ window.RevShopApp = (() => {
                     <a class="btn btn-sm btn-accent market-btn" href="/register">Register</a>
                 </div>
             `;
+        const heroTagsHtml = heroTags
+            .map(tag => `<span class="hero-tag">${escapeHtml(tag)}</span>`)
+            .join("");
 
         host.innerHTML = `
             <header class="shell-header">
@@ -371,8 +389,17 @@ window.RevShopApp = (() => {
             </header>
             <section class="shell-hero">
                 <div class="container py-4 py-md-5">
-                    <h1 class="font-display fw-bold mb-1">${escapeHtml(title)}</h1>
-                    <p class="hero-subtitle mb-0">${escapeHtml(subtitle)}</p>
+                    <div class="shell-hero-grid">
+                        <div class="shell-hero-copy">
+                            <span class="hero-kicker">${escapeHtml(roleContextLabel)}</span>
+                            <h1 class="font-display fw-bold mb-2">${escapeHtml(title)}</h1>
+                            <p class="hero-subtitle mb-2">${escapeHtml(subtitle)}</p>
+                            <p class="hero-support mb-0">${escapeHtml(supportCopy)}</p>
+                        </div>
+                        <div class="hero-tag-cloud">
+                            ${heroTagsHtml}
+                        </div>
+                    </div>
                 </div>
             </section>
         `;
@@ -466,7 +493,7 @@ window.RevShopApp = (() => {
                     </section>
                 </div>
                 <div class="site-footer-meta">
-                    <span>Website developed by Rajukonde</span>
+                    <span>Website developed by RevShop Team</span>
                     <span>Company location: Hyderabad, Telangana, India</span>
                     <span>&copy; ${year} RevShop</span>
                 </div>

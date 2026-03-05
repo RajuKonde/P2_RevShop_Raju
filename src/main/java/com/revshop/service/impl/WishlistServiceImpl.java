@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.ProductDAO;
 import com.revshop.dao.UserDAO;
 import com.revshop.dao.WishlistDAO;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class WishlistServiceImpl implements WishlistService {
 
     private final WishlistDAO wishlistDAO;

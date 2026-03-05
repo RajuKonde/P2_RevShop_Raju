@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/test")
 @Tag(name = "Health/Test", description = "Secure test endpoint")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class TestController {
 
     @GetMapping("/secure")

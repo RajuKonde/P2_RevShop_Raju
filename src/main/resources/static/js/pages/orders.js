@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "orders",
-        title: "Order History",
-        subtitle: "Track order and payment lifecycle for every purchase."
+        title: "Your Orders",
+        subtitle: "Follow each purchase, request help, and share feedback from one place."
     });
 
     const ordersList = document.getElementById("ordersList");

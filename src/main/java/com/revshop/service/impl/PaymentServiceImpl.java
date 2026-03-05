@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.OrderDAO;
 import com.revshop.dao.PaymentDAO;
 import com.revshop.dao.UserDAO;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentDAO paymentDAO;

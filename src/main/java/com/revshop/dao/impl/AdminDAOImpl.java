@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.AdminDAO;
 import com.revshop.entity.Role;
 import com.revshop.entity.User;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Log4j2
 public class AdminDAOImpl implements AdminDAO {
 
     @PersistenceContext

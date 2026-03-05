@@ -1,5 +1,6 @@
 package com.revshop.service.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.UserDAO;
 import com.revshop.dto.LoginRequestDTO;
 import com.revshop.dto.LoginResponseDTO;
@@ -20,6 +21,7 @@ import com.revshop.security.jwt.JwtService;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class UserServiceImpl implements UserService {
 
     private final UserDAO userDAO;
@@ -107,7 +109,7 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("User is disabled");
         }
 
-        // ✅ GENERATE JWT
+        // âœ… GENERATE JWT
         String token = jwtService.generateToken(
                 user.getEmail(),
                 user.getRole().name()

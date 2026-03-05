@@ -1,5 +1,6 @@
 package com.revshop.dao.impl;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dao.OrderItemDAO;
 import com.revshop.entity.OrderStatus;
 import com.revshop.entity.OrderItem;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
+@Log4j2
 public class OrderItemDAOImpl implements OrderItemDAO {
 
     @PersistenceContext

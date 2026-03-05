@@ -1,5 +1,6 @@
 package com.revshop.controller;
 
+import lombok.extern.log4j.Log4j2;
 import com.revshop.dto.common.ApiResponse;
 import com.revshop.dto.payment.PaymentResponse;
 import com.revshop.dto.payment.ProcessPaymentRequest;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Payments", description = "Mock payment processing and payment tracking APIs")
 @SecurityRequirement(name = "bearerAuth")
+@Log4j2
 public class PaymentController {
 
     private final PaymentService paymentService;

@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     app.mountShell({
         active: "cart",
-        title: "Cart and Checkout",
-        subtitle: "Validate quantities and place orders with mock payment flow."
+        title: "Your Cart",
+        subtitle: "Review your items, update quantities, and place your order when you are ready."
     });
 
     const cartTableBody = document.getElementById("cartTableBody");
