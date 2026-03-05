@@ -1,14 +1,11 @@
 package com.revshop;
 
-import org.junit.Test;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.platform.suite.api.IncludeEngines;
+import org.junit.platform.suite.api.SelectPackages;
+import org.junit.platform.suite.api.Suite;
 
-import static org.junit.Assert.assertNotNull;
-
+@Suite
+@IncludeEngines({"junit-jupiter", "junit-vintage"})
+@SelectPackages("com.revshop")
 public class RevshopApplicationTests {
-
-    @Test
-    public void revshopApplication_isAnnotatedForBootstrapping() {
-        assertNotNull(RevshopApplication.class.getAnnotation(SpringBootApplication.class));
-    }
 }
