@@ -5,15 +5,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const form = document.getElementById("forgotPasswordForm");
     const emailInput = document.getElementById("emailInput");
-    const tokenBox = document.getElementById("tokenBox");
-    const tokenValue = document.getElementById("tokenValue");
-    const copyTokenBtn = document.getElementById("copyTokenBtn");
-    const goToResetLink = document.getElementById("goToResetLink");
-
-    let latestToken = null;
+    const emailStatusBox = document.getElementById("emailStatusBox");
+    const submitButton = form.querySelector('button[type="submit"]');
+    const defaultButtonText = submitButton ? submitButton.textContent : "Send Reset Link";
+    let isSubmitting = false;
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (isSubmitting) {
+            return;
+        }
+
         const email = emailInput.value.trim();
         if (!email) {
             app.showToast("Email is required", "error");
@@ -21,32 +23,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
+            isSubmitting = true;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = "Sending...";
+            }
+
             const data = await app.api("/auth/password/forgot", {
                 method: "POST",
                 auth: false,
                 body: { email }
             });
 
-            latestToken = data.resetToken;
-            tokenValue.textContent = data.resetToken;
-            goToResetLink.href = `/reset-password?token=${encodeURIComponent(data.resetToken)}`;
-            tokenBox.classList.remove("d-none");
-            app.showToast("Reset token generated", "success");
+            form.reset();
+            emailStatusBox.classList.remove("d-none");
+            app.showToast(
+                (data && data.note) || "If the account exists, a reset link has been sent",
+                "success"
+            );
         } catch (error) {
-            app.showToast(error.message || "Failed to generate token", "error");
-        }
-    });
-
-    copyTokenBtn.addEventListener("click", async () => {
-        if (!latestToken) {
-            app.showToast("Generate token first", "error");
-            return;
-        }
-        try {
-            await navigator.clipboard.writeText(latestToken);
-            app.showToast("Token copied", "success");
-        } catch (error) {
-            app.showToast("Copy failed. Please copy manually.", "error");
+            app.showToast(error.message || "Failed to send reset link", "error");
+        } finally {
+            isSubmitting = false;
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = defaultButtonText;
+            }
         }
     });
 });

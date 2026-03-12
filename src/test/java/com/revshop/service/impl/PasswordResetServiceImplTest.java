@@ -7,6 +7,7 @@ import com.revshop.entity.PasswordResetToken;
 import com.revshop.entity.Role;
 import com.revshop.entity.User;
 import com.revshop.exception.BadRequestException;
+import com.revshop.service.EmailService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -23,7 +24,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,11 +43,14 @@ public class PasswordResetServiceImplTest {
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private PasswordResetServiceImpl passwordResetService;
 
     @Test
-    public void generateResetToken_deactivatesExistingTokensAndCreatesNewToken() {
+    public void generateResetToken_deactivatesExistingTokensCreatesNewTokenAndSendsEmail() {
         User user = User.builder()
                 .id(7L)
                 .email("buyer@test.com")
@@ -72,10 +78,31 @@ public class PasswordResetServiceImplTest {
         assertNotNull(savedToken.getToken());
         assertEquals(32, savedToken.getToken().length());
 
-        assertEquals("buyer@test.com", response.getEmail());
-        assertEquals(savedToken.getToken(), response.getResetToken());
-        assertEquals(savedToken.getExpiresAt(), response.getExpiresAt());
-        assertTrue(response.getExpiresAt().isAfter(beforeCall.plusMinutes(14)));
+        ArgumentCaptor<String> linkCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendPasswordResetEmail(eq("buyer@test.com"), linkCaptor.capture(), eq(15));
+
+        String resetLink = linkCaptor.getValue();
+        assertTrue(resetLink.startsWith("http://localhost:8080/reset-password?token="));
+        assertTrue(resetLink.endsWith(savedToken.getToken()));
+        assertTrue(savedToken.getExpiresAt().isAfter(beforeCall.plusMinutes(14)));
+
+        assertEquals("EMAIL", response.getDeliveryChannel());
+        assertEquals(Integer.valueOf(15), response.getExpiresInMinutes());
+        assertEquals("If an account exists for this email, a password reset link has been sent.", response.getNote());
+    }
+
+    @Test
+    public void generateResetToken_returnsGenericResponseWhenUserIsMissing() {
+        when(userDAO.findByEmail("missing@test.com")).thenReturn(Optional.empty());
+
+        ForgotPasswordResponse response = passwordResetService.generateResetToken("missing@test.com");
+
+        verify(passwordResetTokenDAO, never()).deactivateActiveTokensByUser(any(User.class));
+        verify(passwordResetTokenDAO, never()).save(any(PasswordResetToken.class));
+        verify(emailService, never()).sendPasswordResetEmail(any(String.class), any(String.class), anyInt());
+        assertEquals("EMAIL", response.getDeliveryChannel());
+        assertEquals(Integer.valueOf(15), response.getExpiresInMinutes());
+        assertEquals("If an account exists for this email, a password reset link has been sent.", response.getNote());
     }
 
     @Test

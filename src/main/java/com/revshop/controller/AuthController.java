@@ -57,7 +57,10 @@ public class AuthController {
             @Valid @RequestBody ForgotPasswordRequest request
     ) {
         ForgotPasswordResponse response = passwordResetService.generateResetToken(request.getEmail());
-        return ResponseEntity.ok(ApiResponse.success("Password reset token generated", response));
+        return ResponseEntity.ok(ApiResponse.success(
+                "If the account exists, a password reset link has been sent",
+                response
+        ));
     }
 
     @PostMapping("/password/reset")
